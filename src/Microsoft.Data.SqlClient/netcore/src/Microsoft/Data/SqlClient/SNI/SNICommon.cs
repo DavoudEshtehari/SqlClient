@@ -104,21 +104,33 @@ namespace Microsoft.Data.SqlClient.SNI
 
     internal class SslStreamProxy : SslStream
     {
-        private Task _currentTask;
+        private readonly SemaphoreSlim _semaphore;
 
-        public SslStreamProxy(Stream innerStream, bool leaveInnerStreamOpen, RemoteCertificateValidationCallback userCertificateValidationCallback) 
+        public SslStreamProxy(Stream innerStream, bool leaveInnerStreamOpen, RemoteCertificateValidationCallback userCertificateValidationCallback)
             : base(innerStream, leaveInnerStreamOpen, userCertificateValidationCallback)
-        { }
+        {
+            _semaphore = new SemaphoreSlim(1); /* granting one concurrent write on innerStream */
+        }
 
         // Prevent the WriteAsync's collision
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (_currentTask != null && _currentTask.Status != TaskStatus.RanToCompletion)
+            await _semaphore.WaitAsync(cancellationToken);
+            try
             {
-                _currentTask.Wait(cancellationToken);
+                await base.WriteAsync(buffer, offset, count, cancellationToken);
             }
-            _currentTask = base.WriteAsync(buffer, offset, count, cancellationToken);
-            return _currentTask;
+            finally
+            {
+                _semaphore.Release();
+            }
+            return;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _semaphore?.Dispose();
+            base.Dispose(disposing);
         }
     }
 
