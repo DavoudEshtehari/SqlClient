@@ -126,7 +126,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 Assert.Equal(0, _fixture.Listener.EventCounters[ActiveHardConnects]);
                 Assert.Equal(0, _fixture.Listener.EventCounters[ActiveSoftConnects]);
                 Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfPooledConnections]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfActiveConnectionPoolGroups]);
+                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnectionPoolGroups]);
                 Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfActiveConnectionPools]);
                 Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfActiveConnections]);
                 Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfFreeConnections]);
@@ -203,17 +203,21 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 typeof(SqlConnection).GetField("s_connectionFactory", BindingFlags.Static | BindingFlags.NonPublic);
             Debug.Assert(connectionFactoryField != null);
 
-            MethodInfo pruneConnectionPoolGroupsMethod =
-                connectionFactoryField.FieldType.GetMethod("PruneConnectionPoolGroups",
-                    BindingFlags.NonPublic | BindingFlags.Instance);
-            Debug.Assert(pruneConnectionPoolGroupsMethod != null);
-            pruneConnectionPoolGroupsMethod.Invoke(connectionFactoryField.GetValue(null), new []{(object)null});
-
             MethodInfo clearAllPoolsMethod =
                 connectionFactoryField.FieldType.GetMethod("ClearAllPools",
                     BindingFlags.Public | BindingFlags.Instance);
             Debug.Assert(clearAllPoolsMethod != null);
             clearAllPoolsMethod.Invoke(connectionFactoryField.GetValue(null), Array.Empty<object>());
+
+            MethodInfo pruneConnectionPoolGroupsMethod =
+                connectionFactoryField.FieldType.GetMethod("PruneConnectionPoolGroups",
+                    BindingFlags.NonPublic | BindingFlags.Instance);
+            Debug.Assert(pruneConnectionPoolGroupsMethod != null);
+
+            //to clear pools reliably several cleanup cycles are required
+            for (int i = 0; i < 5; i++)
+                pruneConnectionPoolGroupsMethod.Invoke(connectionFactoryField.GetValue(null), new[] {(object)null});
+
         }
     }
 
