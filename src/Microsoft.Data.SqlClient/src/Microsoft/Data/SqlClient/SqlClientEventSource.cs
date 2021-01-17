@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics.Tracing;
 using System.Threading;
 
@@ -26,23 +27,41 @@ namespace Microsoft.Data.SqlClient
 
         internal virtual void SoftDisconnectRequest() { /*no-op*/ }
 
-        internal virtual void NonPooledConnectionRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void EnterNonPooledConnection() { /*no-op*/ }
 
-        internal virtual void PooledConnectionRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void ExitNonPooledConnection() { /*no-op*/ }
 
-        internal virtual void ActiveConnectionPoolGroupRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void EnterPooledConnection() { /*no-op*/ }
 
-        internal virtual void InactiveConnectionPoolGroupRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void ExitPooledConnection() { /*no-op*/ }
 
-        internal virtual void ActiveConnectionPoolRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void EnterActiveConnectionPoolGroup() { /*no-op*/ }
 
-        internal virtual void InactiveConnectionPoolRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void ExitActiveConnectionPoolGroup() { /*no-op*/ }
 
-        internal virtual void ActiveConnectionRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void EnterInactiveConnectionPoolGroup() { /*no-op*/ }
 
-        internal virtual void FreeConnectionRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void ExitInactiveConnectionPoolGroup() { /*no-op*/ }
 
-        internal virtual void StasisConnectionRequest(bool increment = true) { /*no-op*/ }
+        internal virtual void EnterActiveConnectionPool() { /*no-op*/ }
+
+        internal virtual void ExitActiveConnectionPool() { /*no-op*/ }
+
+        internal virtual void EnterInactiveConnectionPool() { /*no-op*/ }
+
+        internal virtual void ExitInactiveConnectionPool() { /*no-op*/ }
+
+        internal virtual void EnterActiveConnection() { /*no-op*/ }
+
+        internal virtual void ExitActiveConnection() { /*no-op*/ }
+
+        internal virtual void EnterFreeConnection() { /*no-op*/ }
+
+        internal virtual void ExitFreeConnection() { /*no-op*/ }
+
+        internal virtual void EnterStasisConnection() { /*no-op*/ }
+
+        internal virtual void ExitStasisConnection() { /*no-op*/ }
 
         internal virtual void ReclaimedConnectionRequest() { /*no-op*/ }
         #endregion
@@ -1051,5 +1070,25 @@ namespace Microsoft.Data.SqlClient
             WriteEvent(SNIScopeExitId, scopeId);
         }
         #endregion
+    }
+
+    internal readonly struct SNIEventScope : IDisposable
+    {
+        private readonly long _scopeID;
+
+        public SNIEventScope(long scopeID)
+        {
+            _scopeID = scopeID;
+        }
+
+        public void Dispose()
+        {
+            SqlClientEventSource.Log.SNIScopeLeave(_scopeID);
+        }
+
+        public static SNIEventScope Create(string message)
+        {
+            return new SNIEventScope(SqlClientEventSource.Log.SNIScopeEnter(message));
+        }
     }
 }

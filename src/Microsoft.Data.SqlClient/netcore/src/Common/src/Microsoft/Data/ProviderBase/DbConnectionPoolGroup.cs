@@ -187,7 +187,7 @@ namespace Microsoft.Data.ProviderBase
                                     newPool.Startup(); // must start pool before usage
                                     bool addResult = _poolCollection.TryAdd(currentIdentity, newPool);
                                     Debug.Assert(addResult, "No other pool with current identity should exist at this point");
-                                    SqlClientEventSource.Log.ActiveConnectionPoolRequest();
+                                    SqlClientEventSource.Log.EnterActiveConnectionPool();
                                     pool = newPool;
                                 }
                                 else
@@ -264,7 +264,6 @@ namespace Microsoft.Data.ProviderBase
                                 // are completely empty.
                                 DbConnectionFactory connectionFactory = pool.ConnectionFactory;
                                 connectionFactory.QueuePoolForRelease(pool, false);
-
                             }
                             else
                             {
