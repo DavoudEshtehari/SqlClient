@@ -15,74 +15,52 @@ using Xunit;
 
 namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 {
-    public sealed class EventCounterTestFixture: IDisposable
-    {
-        internal CollectingEventCounterListener Listener { get; set; }
-
-        public void EnableListeners() => Listener ??= new CollectingEventCounterListener();
-
-        public void Dispose() => Listener?.Dispose();
-    }
-
     /// <summary>
     /// This unit test is just valid for .NetCore 3.0 and above
     /// </summary>
-    public class EventCounterTest: IClassFixture<EventCounterTestFixture>
+    public class EventCounterTest
     {
-        private readonly EventCounterTestFixture _fixture;
-        private const string ActiveHardConnects = "active-hard-connections";
-        private const string ActiveSoftConnects = "active-soft-connects";
-        private const string NumberOfNonPooledConnections = "number-of-non-pooled-connections";
-        private const string NumberOfPooledConnections = "number-of-pooled-connections";
-        private const string NumberOfActiveConnectionPoolGroups = "number-of-active-connection-pool-groups";
-        private const string NumberOfActiveConnectionPools = "number-of-active-connection-pools";
-        private const string NumberOfActiveConnections = "number-of-active-connections";
-        private const string NumberOfFreeConnections = "number-of-free-connections";
-        private const string NumberOfStasisConnections = "number-of-stasis-connections";
-
-        public EventCounterTest(EventCounterTestFixture fixture)
+        public EventCounterTest()
         {
-            _fixture = fixture;
             ClearConnectionPools();
-            fixture.EnableListeners();
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
-        public void EventCounterTestAll()
-        {
-            var stringBuilder = new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString)
-            {
-                Pooling = true, MaxPoolSize = 20
-            };
+        // [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        // public void EventCounterTestAll()
+        // {
+        //     var stringBuilder = new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString)
+        //     {
+        //         Pooling = true, MaxPoolSize = 20
+        //     };
+        //
+        //     OpenConnections(stringBuilder.ConnectionString);
+        //     stringBuilder.Pooling = false;
+        //     OpenConnections(stringBuilder.ConnectionString);
+        //
+        //     Thread.Sleep(3000);
+        //     _fixture.Listener.WaitForStatsUpdated();
+        //
+        //     //there are 16 counters total - all of them must have been collected
+        //     Assert.Equal(16, _fixture.Listener.EventCounters.Count);
+        // }
 
-            OpenConnections(stringBuilder.ConnectionString);
-            stringBuilder.Pooling = false;
-            OpenConnections(stringBuilder.ConnectionString);
-
-            Thread.Sleep(3000);
-            _fixture.Listener.WaitForStatsUpdated();
-
-            //there are 16 counters total - all of them must have been collected
-            Assert.Equal(16, _fixture.Listener.EventCounters.Count);
-        }
-
-        private void OpenConnections(string cnnString)
-        {
-            List<Task> tasks = new List<Task>();
-
-            Enumerable.Range(1, 100).ToList().ForEach(i =>
-            {
-                SqlConnection cnn = new SqlConnection(cnnString);
-                cnn.Open();
-                int x = i;
-                tasks.Add(Task.Run(() =>
-                {
-                    Thread.Sleep(x);
-                    cnn.Close();
-                }));
-            });
-            Task.WhenAll(tasks).Wait();
-        }
+        // private void OpenConnections(string cnnString)
+        // {
+        //     List<Task> tasks = new List<Task>();
+        //
+        //     Enumerable.Range(1, 100).ToList().ForEach(i =>
+        //     {
+        //         SqlConnection cnn = new SqlConnection(cnnString);
+        //         cnn.Open();
+        //         int x = i;
+        //         tasks.Add(Task.Run(() =>
+        //         {
+        //             Thread.Sleep(x);
+        //             cnn.Close();
+        //         }));
+        //     });
+        //     Task.WhenAll(tasks).Wait();
+        // }
 
         [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
         public void EventCounter_HardConnectionsCounters_Functional()
@@ -91,25 +69,22 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             var stringBuilder = new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString) {Pooling = false};
 
             using var conn = new SqlConnection(stringBuilder.ToString());
-            _fixture.Listener.WaitForStatsUpdated();
 
             //initially we have no open physical connections
-            Assert.Equal(0, _fixture.Listener.EventCounters[ActiveHardConnects]);
-            Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfNonPooledConnections]);
+            Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
+            Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
 
             conn.Open();
-            _fixture.Listener.WaitForStatsUpdated();
 
             //when the connection gets opened, the real physical connection appears
-            Assert.Equal(1, _fixture.Listener.EventCounters[ActiveHardConnects]);
-            Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfNonPooledConnections]);
+            Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
+            Assert.Equal(1, SqlClientEventSourceProps.NonPooledConnections);
 
             conn.Close();
-            _fixture.Listener.WaitForStatsUpdated();
 
             //when the connection gets closed, the real physical connection is also closed
-            Assert.Equal(0, _fixture.Listener.EventCounters[ActiveHardConnects]);
-            Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfNonPooledConnections]);
+            Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
+            Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
         }
 
         [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
@@ -120,56 +95,51 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
             using (var conn = new SqlConnection(stringBuilder.ToString()))
             {
-                _fixture.Listener.WaitForStatsUpdated();
-
                 //initially we have no open physical connections
-                Assert.Equal(0, _fixture.Listener.EventCounters[ActiveHardConnects]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[ActiveSoftConnects]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfPooledConnections]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnectionPoolGroups]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfActiveConnectionPools]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfActiveConnections]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfFreeConnections]);
+                Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.ActiveSoftConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.PooledConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.ActiveConnectionPools);
+                Assert.Equal(0, SqlClientEventSourceProps.ActiveConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.FreeConnections);
 
                 conn.Open();
-                _fixture.Listener.WaitForStatsUpdated();
 
                 //when the connection gets opened, the real physical connection appears
                 //and the appropriate pooling infrastructure gets deployed
-                Assert.Equal(1, _fixture.Listener.EventCounters[ActiveHardConnects]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[ActiveSoftConnects]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfPooledConnections]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnectionPoolGroups]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnectionPools]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnections]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfFreeConnections]);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveSoftConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.PooledConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnectionPools);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.FreeConnections);
 
                 conn.Close();
-                _fixture.Listener.WaitForStatsUpdated();
 
                 //when the connection gets closed, the real physical connection gets returned to the pool
-                Assert.Equal(1, _fixture.Listener.EventCounters[ActiveHardConnects]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[ActiveSoftConnects]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfPooledConnections]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnectionPoolGroups]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnectionPools]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfActiveConnections]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfFreeConnections]);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.ActiveSoftConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.PooledConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnectionPools);
+                Assert.Equal(0, SqlClientEventSourceProps.ActiveConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.FreeConnections);
             }
 
             using (var conn2 = new SqlConnection(stringBuilder.ToString()))
             {
                 conn2.Open();
-                _fixture.Listener.WaitForStatsUpdated();
 
                 //the next open connection will reuse the underlying physical connection
-                Assert.Equal(1, _fixture.Listener.EventCounters[ActiveHardConnects]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[ActiveSoftConnects]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfPooledConnections]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnectionPoolGroups]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnectionPools]);
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfActiveConnections]);
-                Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfFreeConnections]);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveSoftConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.PooledConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnectionPools);
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.FreeConnections);
             }
         }
 
@@ -185,16 +155,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 conn.EnlistTransaction(System.Transactions.Transaction.Current);
                 conn.Close();
 
-                _fixture.Listener.WaitForStatsUpdated();
-
                 //when the connection gets closed, but the ambient transaction is still in prigress
                 //the physical connection gets in stasis, until the transaction ends
-                Assert.Equal(1, _fixture.Listener.EventCounters[NumberOfStasisConnections]);
+                Assert.Equal(1, SqlClientEventSourceProps.StasisConnections);
             }
 
             //when the transaction finally ends, the physical connection is returned from stasis
-            _fixture.Listener.WaitForStatsUpdated();
-            Assert.Equal(0, _fixture.Listener.EventCounters[NumberOfStasisConnections]);
+            Assert.Equal(0, SqlClientEventSourceProps.StasisConnections);
         }
 
         private void ClearConnectionPools()
@@ -213,82 +180,90 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 connectionFactoryField.FieldType.GetMethod("PruneConnectionPoolGroups",
                     BindingFlags.NonPublic | BindingFlags.Instance);
             Debug.Assert(pruneConnectionPoolGroupsMethod != null);
-
-            //to clear pools reliably several cleanup cycles are required
-            for (int i = 0; i < 5; i++)
-                pruneConnectionPoolGroupsMethod.Invoke(connectionFactoryField.GetValue(null), new[] {(object)null});
-
+            pruneConnectionPoolGroupsMethod.Invoke(connectionFactoryField.GetValue(null), new[] {(object)null});
         }
     }
 
-    internal class CollectingEventCounterListener : EventListener
+    internal static class SqlClientEventSourceProps
     {
-        private readonly AutoResetEvent _resetEvent = new AutoResetEvent(false);
-        private readonly Stopwatch _stopwatch = new Stopwatch();
-        private const byte _eventCounterIntervalSec = 1;
-        private const int _eventDeliveryWaitMSec = _eventCounterIntervalSec * 2 * 1000;
-        private const int _maxEventDeliveryWaitMSec = _eventCounterIntervalSec * 5 * 1000;
-        private IList<EventSource> _enabledSources = new List<EventSource>();
+        private static readonly object _log;
+        private static readonly FieldInfo _activeHardConnectionsCounter;
+        private static readonly FieldInfo _activeSoftConnectionsCounter;
+        private static readonly FieldInfo _nonPooledConnectionsCounter;
+        private static readonly FieldInfo _pooledConnectionsCounter;
+        private static readonly FieldInfo _activeConnectionPoolGroupsCounter;
+        private static readonly FieldInfo _inactiveConnectionPoolGroupsCounter;
+        private static readonly FieldInfo _activeConnectionPoolsCounter;
+        private static readonly FieldInfo _inactiveConnectionPoolsCounter;
+        private static readonly FieldInfo _activeConnectionsCounter;
+        private static readonly FieldInfo _freeConnectionsCounter;
+        private static readonly FieldInfo _stasisConnectionsCounter;
 
-        public Dictionary<string, double> EventCounters { get; } = new Dictionary<string, double>();
-
-        protected override void OnEventSourceCreated(EventSource eventSource)
+        static SqlClientEventSourceProps()
         {
-            if (eventSource.Name.Equals("Microsoft.Data.SqlClient.EventSource"))
-            {
-                // define time interval 1 second
-                // without defining this parameter event counters will not enabled
-                // enable for the None keyword
-                var options =
-                    new Dictionary<string, string> {{"EventCounterIntervalSec", _eventCounterIntervalSec.ToString()}};
-                EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None, options);
-                _enabledSources.Add(eventSource);
-            }
+            var sqlClientEventSourceType =
+                Assembly.GetAssembly(typeof(SqlConnection))!.GetType("Microsoft.Data.SqlClient.SqlClientEventSource");
+            Debug.Assert(sqlClientEventSourceType != null);
+            var logField = sqlClientEventSourceType.GetField("Log", BindingFlags.Static | BindingFlags.NonPublic);
+            Debug.Assert(logField != null);
+            _log = logField.GetValue(null);
+
+            var _bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+            _activeHardConnectionsCounter =
+                sqlClientEventSourceType.GetField(nameof(_activeHardConnectionsCounter), _bindingFlags);
+            Debug.Assert(_activeHardConnectionsCounter != null);
+            _activeSoftConnectionsCounter =
+                sqlClientEventSourceType.GetField(nameof(_activeSoftConnectionsCounter), _bindingFlags);
+            Debug.Assert(_activeSoftConnectionsCounter != null);
+            _nonPooledConnectionsCounter =
+                sqlClientEventSourceType.GetField(nameof(_nonPooledConnectionsCounter), _bindingFlags);
+            Debug.Assert(_nonPooledConnectionsCounter != null);
+            _pooledConnectionsCounter =
+                sqlClientEventSourceType.GetField(nameof(_pooledConnectionsCounter), _bindingFlags);
+            Debug.Assert(_pooledConnectionsCounter != null);
+            _activeConnectionPoolGroupsCounter =
+                sqlClientEventSourceType.GetField(nameof(_activeConnectionPoolGroupsCounter), _bindingFlags);
+            Debug.Assert(_activeConnectionPoolGroupsCounter != null);
+            _inactiveConnectionPoolGroupsCounter =
+                sqlClientEventSourceType.GetField(nameof(_inactiveConnectionPoolGroupsCounter), _bindingFlags);
+            Debug.Assert(_inactiveConnectionPoolGroupsCounter != null);
+            _activeConnectionPoolsCounter =
+                sqlClientEventSourceType.GetField(nameof(_activeConnectionPoolsCounter), _bindingFlags);
+            Debug.Assert(_activeConnectionPoolsCounter != null);
+            _inactiveConnectionPoolsCounter =
+                sqlClientEventSourceType.GetField(nameof(_inactiveConnectionPoolsCounter), _bindingFlags);
+            Debug.Assert(_inactiveConnectionPoolsCounter != null);
+            _activeConnectionsCounter =
+                sqlClientEventSourceType.GetField(nameof(_activeConnectionsCounter), _bindingFlags);
+            Debug.Assert(_activeConnectionsCounter != null);
+            _freeConnectionsCounter =
+                sqlClientEventSourceType.GetField(nameof(_freeConnectionsCounter), _bindingFlags);
+            Debug.Assert(_freeConnectionsCounter != null);
+            _stasisConnectionsCounter =
+                sqlClientEventSourceType.GetField(nameof(_stasisConnectionsCounter), _bindingFlags);
+            Debug.Assert(_stasisConnectionsCounter != null);
         }
 
-        public override void Dispose()
-        {
-            foreach (EventSource eventSource in _enabledSources)
-                DisableEvents(eventSource);
-            base.Dispose();
-        }
+        public static long ActiveHardConnections => (long)_activeHardConnectionsCounter.GetValue(_log)!;
 
-        public void WaitForStatsUpdated()
-        {
-            _stopwatch.Start();
-            Assert.True(_resetEvent.WaitOne(_maxEventDeliveryWaitMSec), "The test failed by timeout");
-        }
+        public static long ActiveSoftConnections => (long)_activeSoftConnectionsCounter.GetValue(_log)!;
 
-        protected override void OnEventWritten(EventWrittenEventArgs eventData)
-        {
-            if (!string.Equals(eventData.EventName, "EventCounters", StringComparison.InvariantCultureIgnoreCase))
-                return;
+        public static long NonPooledConnections => (long)_nonPooledConnectionsCounter.GetValue(_log)!;
 
-            for (int i = 0; i < eventData.Payload!.Count; ++i)
-                if (eventData.Payload[i] is IDictionary<string, object> eventPayload)
-                    if (TryGetRelevantMetric(eventPayload, out object metric, out object value))
-                        EventCounters[(string)metric] = (double)value;
+        public static long PooledConnections => (long)_pooledConnectionsCounter.GetValue(_log)!;
 
-            if (_stopwatch.ElapsedMilliseconds > _eventDeliveryWaitMSec)
-            {
-                _stopwatch.Reset();
-                _resetEvent.Set();
-            }
-        }
+        public static long ActiveConnectionPoolGroups => (long)_activeConnectionPoolGroupsCounter.GetValue(_log)!;
 
-        private static bool TryGetRelevantMetric(
-            IDictionary<string, object> eventPayload, out object metric, out object value)
-        {
-            byte propertiesFound = 0;
+        public static long InactiveConnectionPoolGroups => (long)_inactiveConnectionPoolGroupsCounter.GetValue(_log)!;
 
-            if (eventPayload.TryGetValue("Name", out metric))
-                propertiesFound++;
+        public static long ActiveConnectionPools => (long)_activeConnectionPoolsCounter.GetValue(_log)!;
 
-            if (eventPayload.TryGetValue("Mean", out value) || eventPayload.TryGetValue("Increment", out value))
-                propertiesFound++;
+        public static long InactiveConnectionPools => (long)_inactiveConnectionPoolsCounter.GetValue(_log)!;
 
-            const byte propertiesRequired = 2;
-            return propertiesFound == propertiesRequired;
-        }
+        public static long ActiveConnections => (long)_activeConnectionsCounter.GetValue(_log)!;
+
+        public static long FreeConnections => (long)_freeConnectionsCounter.GetValue(_log)!;
+
+        public static long StasisConnections => (long)_stasisConnectionsCounter.GetValue(_log)!;
     }
 }
