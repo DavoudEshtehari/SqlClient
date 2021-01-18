@@ -3,13 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Transactions;
 using Xunit;
 
@@ -24,43 +19,6 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         {
             ClearConnectionPools();
         }
-
-        // [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
-        // public void EventCounterTestAll()
-        // {
-        //     var stringBuilder = new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString)
-        //     {
-        //         Pooling = true, MaxPoolSize = 20
-        //     };
-        //
-        //     OpenConnections(stringBuilder.ConnectionString);
-        //     stringBuilder.Pooling = false;
-        //     OpenConnections(stringBuilder.ConnectionString);
-        //
-        //     Thread.Sleep(3000);
-        //     _fixture.Listener.WaitForStatsUpdated();
-        //
-        //     //there are 16 counters total - all of them must have been collected
-        //     Assert.Equal(16, _fixture.Listener.EventCounters.Count);
-        // }
-
-        // private void OpenConnections(string cnnString)
-        // {
-        //     List<Task> tasks = new List<Task>();
-        //
-        //     Enumerable.Range(1, 100).ToList().ForEach(i =>
-        //     {
-        //         SqlConnection cnn = new SqlConnection(cnnString);
-        //         cnn.Open();
-        //         int x = i;
-        //         tasks.Add(Task.Run(() =>
-        //         {
-        //             Thread.Sleep(x);
-        //             cnn.Close();
-        //         }));
-        //     });
-        //     Task.WhenAll(tasks).Wait();
-        // }
 
         [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
         public void EventCounter_HardConnectionsCounters_Functional()
@@ -166,21 +124,55 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
         private void ClearConnectionPools()
         {
-            FieldInfo connectionFactoryField =
-                typeof(SqlConnection).GetField("s_connectionFactory", BindingFlags.Static | BindingFlags.NonPublic);
-            Debug.Assert(connectionFactoryField != null);
+            //ClearAllPoos kills all the existing pooled connection thus deactivating all the active pools
+            var liveConnectionPools = SqlClientEventSourceProps.ActiveConnectionPools +
+                                      SqlClientEventSourceProps.InactiveConnectionPools;
+            ClearAllPools();
+            Assert.InRange(SqlClientEventSourceProps.InactiveConnectionPools, 0, liveConnectionPools);
+            Assert.Equal(0, SqlClientEventSourceProps.ActiveConnectionPools);
 
+            //the 1st PruneConnectionPoolGroups call cleans the dangling inactive connection pools
+            PruneConnectionPoolGroups();
+            Assert.Equal(0, SqlClientEventSourceProps.InactiveConnectionPools);
+
+            //the 2nd call deactivates the dangling connection pool groups
+            var liveConnectionPoolGroups = SqlClientEventSourceProps.ActiveConnectionPoolGroups +
+                                           SqlClientEventSourceProps.InactiveConnectionPoolGroups;
+            PruneConnectionPoolGroups();
+            Assert.InRange(SqlClientEventSourceProps.InactiveConnectionPoolGroups, 0, liveConnectionPoolGroups);
+            Assert.Equal(0, SqlClientEventSourceProps.ActiveConnectionPoolGroups);
+
+            //the 3rd call cleans the dangling connection pool groups
+            PruneConnectionPoolGroups();
+            Assert.Equal(0, SqlClientEventSourceProps.InactiveConnectionPoolGroups);
+        }
+
+        private static void ClearAllPools()
+        {
+            FieldInfo connectionFactoryField = GetConnectionFactoryField();
             MethodInfo clearAllPoolsMethod =
                 connectionFactoryField.FieldType.GetMethod("ClearAllPools",
                     BindingFlags.Public | BindingFlags.Instance);
             Debug.Assert(clearAllPoolsMethod != null);
             clearAllPoolsMethod.Invoke(connectionFactoryField.GetValue(null), Array.Empty<object>());
+        }
 
+        private static void PruneConnectionPoolGroups()
+        {
+            FieldInfo connectionFactoryField = GetConnectionFactoryField();
             MethodInfo pruneConnectionPoolGroupsMethod =
                 connectionFactoryField.FieldType.GetMethod("PruneConnectionPoolGroups",
                     BindingFlags.NonPublic | BindingFlags.Instance);
             Debug.Assert(pruneConnectionPoolGroupsMethod != null);
             pruneConnectionPoolGroupsMethod.Invoke(connectionFactoryField.GetValue(null), new[] {(object)null});
+        }
+
+        private static FieldInfo GetConnectionFactoryField()
+        {
+            FieldInfo connectionFactoryField =
+                typeof(SqlConnection).GetField("s_connectionFactory", BindingFlags.Static | BindingFlags.NonPublic);
+            Debug.Assert(connectionFactoryField != null);
+            return connectionFactoryField;
         }
     }
 
