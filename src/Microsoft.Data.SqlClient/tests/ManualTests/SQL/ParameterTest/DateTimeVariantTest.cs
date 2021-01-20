@@ -283,7 +283,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     xsql(conn, string.Format("create type dbo.{0} as table (f1 {1})", tvpTypeName, expectedBaseTypeName));
 
                     // Send TVP using SqlDataReader.
-                    SqlConnection connInput = new SqlConnection(s_connStr);
+                    using SqlConnection connInput = new SqlConnection(s_connStr);
                     connInput.Open();
 
                     using (SqlCommand cmdInput = connInput.CreateCommand())
@@ -345,7 +345,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     xsql(conn, string.Format("create type dbo.{0} as table (f1 sql_variant)", tvpTypeName));
 
                     // Send TVP using SqlDataReader.
-                    SqlConnection connInput = new SqlConnection(s_connStr);
+                    using SqlConnection connInput = new SqlConnection(s_connStr);
                     connInput.Open();
                     using (SqlCommand cmdInput = connInput.CreateCommand())
                     {
@@ -727,7 +727,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     }
                     xsql(conn, string.Format("insert into {0}(f1) values(CAST('{1}' AS {2}));", bulkCopySrcTableName, value, expectedBaseTypeName));
 
-                    SqlConnection connInput = new SqlConnection(s_connStr);
+                    using SqlConnection connInput = new SqlConnection(s_connStr);
                     connInput.Open();
                     using (SqlCommand cmdInput = connInput.CreateCommand())
                     {
@@ -810,7 +810,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     }
                     xsql(conn, string.Format("insert into {0}(f1) values(CAST('{1}' AS {2}));", bulkCopySrcTableName, value, expectedBaseTypeName));
 
-                    SqlConnection connInput = new SqlConnection(s_connStr);
+                    using SqlConnection connInput = new SqlConnection(s_connStr);
                     connInput.Open();
                     using (SqlCommand cmdInput = connInput.CreateCommand())
                     {
@@ -1288,7 +1288,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 return false;
             }
         }
-                
+
         private static bool IsExpectedInvalidOperationException(Exception e, string expectedBaseTypeName)
         {
             return ((e.GetType() == typeof(InvalidOperationException)) &&

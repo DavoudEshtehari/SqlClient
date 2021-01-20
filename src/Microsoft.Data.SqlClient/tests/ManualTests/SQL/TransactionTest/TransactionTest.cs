@@ -246,7 +246,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
                     DataTestUtility.AssertThrowsWrapper<InvalidOperationException>(() =>
                     {
-                        SqlConnection con1 = new SqlConnection(_connectionString);
+                        using SqlConnection con1 = new SqlConnection(_connectionString);
                         con1.Open();
 
                         SqlCommand command = new SqlCommand("sql", con1);

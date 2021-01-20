@@ -46,19 +46,19 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         /// <param name="connectionString"></param>
         private static void BasicConnectionPoolingTest(string connectionString)
         {
-            SqlConnection connection = new SqlConnection(connectionString);
+            using SqlConnection connection = new SqlConnection(connectionString);
             connection.Open();
             InternalConnectionWrapper internalConnection = new InternalConnectionWrapper(connection);
             ConnectionPoolWrapper connectionPool = new ConnectionPoolWrapper(connection);
             connection.Close();
 
-            SqlConnection connection2 = new SqlConnection(connectionString);
+            using SqlConnection connection2 = new SqlConnection(connectionString);
             connection2.Open();
             Assert.True(internalConnection.IsInternalConnectionOf(connection2), "New connection does not use same internal connection");
             Assert.True(connectionPool.ContainsConnection(connection2), "New connection is in a different pool");
             connection2.Close();
 
-            SqlConnection connection3 = new SqlConnection(connectionString + ";App=SqlConnectionPoolUnitTest;");
+            using SqlConnection connection3 = new SqlConnection(connectionString + ";App=SqlConnectionPoolUnitTest;");
             connection3.Open();
             Assert.False(internalConnection.IsInternalConnectionOf(connection3), "Connection with different connection string uses same internal connection");
             Assert.False(connectionPool.ContainsConnection(connection3), "Connection with different connection string uses same connection pool");
@@ -66,7 +66,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
             connectionPool.Cleanup();
 
-            SqlConnection connection4 = new SqlConnection(connectionString);
+            using SqlConnection connection4 = new SqlConnection(connectionString);
             connection4.Open();
             Assert.True(internalConnection.IsInternalConnectionOf(connection4), "New connection does not use same internal connection");
             Assert.True(connectionPool.ContainsConnection(connection4), "New connection is in a different pool");
@@ -154,7 +154,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             SqlConnection.ClearAllPools();
             Assert.True(0 == ConnectionPoolWrapper.AllConnectionPools().Length, "Pools exist after clearing all pools");
 
-            SqlConnection connection = new SqlConnection(connectionString);
+            using SqlConnection connection = new SqlConnection(connectionString);
             connection.Open();
             ConnectionPoolWrapper pool = new ConnectionPoolWrapper(connection);
             connection.Close();
@@ -178,7 +178,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             string newConnectionString = (new SqlConnectionStringBuilder(connectionString) { MaxPoolSize = 1 }).ConnectionString;
             SqlConnection.ClearAllPools();
 
-            InternalConnectionWrapper internalConnection = CreateEmancipatedConnection(newConnectionString);
+            using var outerConnection = new SqlConnection(newConnectionString);
+            outerConnection.Open();
+            InternalConnectionWrapper internalConnection = new InternalConnectionWrapper(outerConnection);
+
             ConnectionPoolWrapper connectionPool = internalConnection.ConnectionPool;
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -186,12 +189,12 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             DataTestUtility.AssertEqualsWithDescription(1, connectionPool.ConnectionCount, "Wrong number of connections in the pool.");
             DataTestUtility.AssertEqualsWithDescription(0, connectionPool.FreeConnectionCount, "Wrong number of free connections in the pool.");
 
-            using (SqlConnection connection = new SqlConnection(newConnectionString))
-            {
-                connection.Open();
-                Assert.True(internalConnection.IsInternalConnectionOf(connection), "Connection has wrong internal connection");
-                Assert.True(connectionPool.ContainsConnection(connection), "Connection is in wrong connection pool");
-            }
+            outerConnection.Close();
+
+            using SqlConnection connection = new SqlConnection(newConnectionString);
+            connection.Open();
+            Assert.True(internalConnection.IsInternalConnectionOf(connection), "Connection has wrong internal connection");
+            Assert.True(connectionPool.ContainsConnection(connection), "Connection is in wrong connection pool");
         }
 
         private static void ReplacementConnectionUsesSemaphoreTest(string connectionString)
@@ -279,13 +282,6 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
 
             return internalConnection;
-        }
-
-        private static InternalConnectionWrapper CreateEmancipatedConnection(string connectionString)
-        {
-            SqlConnection connection = new SqlConnection(connectionString);
-            connection.Open();
-            return new InternalConnectionWrapper(connection);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         {
             // Passes on NetFx
             var asyncConnectionString = DataTestUtility.TCPConnectionString + ";async=true";
-            SqlConnection connection = new SqlConnection(asyncConnectionString);
+            using SqlConnection connection = new SqlConnection(asyncConnectionString);
         }
 
         #region <<ExecuteCommand_WithNewConnection>>
@@ -60,7 +60,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
         private static async Task ExecuteCommandWithNewConnectionAsync(string processName, string cmdText, ICollection<string> executedProcessList)
         {
-            var conn = new SqlConnection(DataTestUtility.TCPConnectionString);
+            using var conn = new SqlConnection(DataTestUtility.TCPConnectionString);
 
             await conn.OpenAsync();
             var cmd = new SqlCommand(cmdText, conn);

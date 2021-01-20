@@ -127,7 +127,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             //ClearAllPoos kills all the existing pooled connection thus deactivating all the active pools
             var liveConnectionPools = SqlClientEventSourceProps.ActiveConnectionPools +
                                       SqlClientEventSourceProps.InactiveConnectionPools;
-            ClearAllPools();
+            SqlConnection.ClearAllPools();
             Assert.InRange(SqlClientEventSourceProps.InactiveConnectionPools, 0, liveConnectionPools);
             Assert.Equal(0, SqlClientEventSourceProps.ActiveConnectionPools);
 
@@ -145,16 +145,6 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             //the 3rd call cleans the dangling connection pool groups
             PruneConnectionPoolGroups();
             Assert.Equal(0, SqlClientEventSourceProps.InactiveConnectionPoolGroups);
-        }
-
-        private static void ClearAllPools()
-        {
-            FieldInfo connectionFactoryField = GetConnectionFactoryField();
-            MethodInfo clearAllPoolsMethod =
-                connectionFactoryField.FieldType.GetMethod("ClearAllPools",
-                    BindingFlags.Public | BindingFlags.Instance);
-            Debug.Assert(clearAllPoolsMethod != null);
-            clearAllPoolsMethod.Invoke(connectionFactoryField.GetValue(null), Array.Empty<object>());
         }
 
         private static void PruneConnectionPoolGroups()
