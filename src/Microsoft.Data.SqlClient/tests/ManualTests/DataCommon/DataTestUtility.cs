@@ -60,6 +60,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         private const string ManagedNetworkingAppContextSwitch = "Switch.Microsoft.Data.SqlClient.UseManagedNetworkingOnWindows";
 
         private static Dictionary<string, bool> AvailableDatabases;
+        private static TraceEventListener TraceListener;
 
         static DataTestUtility()
         {
@@ -89,6 +90,11 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             UserManagedIdentityObjectId = c.UserManagedIdentityObjectId;
 
             System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
+
+            if (TracingEnabled)
+            {
+                TraceListener = new TraceEventListener();
+            }
 
             if (UseManagedSNIOnWindows)
             {
@@ -730,23 +736,14 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
         public class TraceEventListener : EventListener
         {
-            private IList<EventSource> _eventSources = new List<EventSource>();
             public List<int> IDs = new List<int>();
-
-            public override void Dispose()
-            {
-                foreach (EventSource eventSource in _eventSources)
-                    DisableEvents(eventSource);
-                base.Dispose();
-            }
 
             protected override void OnEventSourceCreated(EventSource eventSource)
             {
                 if (eventSource.Name.Equals("Microsoft.Data.SqlClient.EventSource"))
                 {
-                    // Collect all traces for better code coverage
+                    //// Collect all traces for better code coverage
                     EnableEvents(eventSource, EventLevel.Informational, EventKeywords.All);
-                    _eventSources.Add(eventSource);
                 }
             }
 
