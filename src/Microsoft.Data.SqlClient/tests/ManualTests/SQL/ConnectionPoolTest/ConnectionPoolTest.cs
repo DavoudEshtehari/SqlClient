@@ -190,10 +190,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             string newConnectionString = (new SqlConnectionStringBuilder(connectionString) { MaxPoolSize = 1 }).ConnectionString;
             SqlConnection.ClearAllPools();
 
-            using var outerConnection = new SqlConnection(newConnectionString);
-            outerConnection.Open();
-            InternalConnectionWrapper internalConnection = new InternalConnectionWrapper(outerConnection);
-
+            InternalConnectionWrapper internalConnection = CreateEmancipatedConnection(newConnectionString);
             ConnectionPoolWrapper connectionPool = internalConnection.ConnectionPool;
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -201,12 +198,12 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             DataTestUtility.AssertEqualsWithDescription(1, connectionPool.ConnectionCount, "Wrong number of connections in the pool.");
             DataTestUtility.AssertEqualsWithDescription(0, connectionPool.FreeConnectionCount, "Wrong number of free connections in the pool.");
 
-            outerConnection.Close();
-
-            using SqlConnection connection = new SqlConnection(newConnectionString);
-            connection.Open();
-            Assert.True(internalConnection.IsInternalConnectionOf(connection), "Connection has wrong internal connection");
-            Assert.True(connectionPool.ContainsConnection(connection), "Connection is in wrong connection pool");
+            using (SqlConnection connection = new SqlConnection(newConnectionString))
+            {
+                connection.Open();
+                Assert.True(internalConnection.IsInternalConnectionOf(connection), "Connection has wrong internal connection");
+                Assert.True(connectionPool.ContainsConnection(connection), "Connection is in wrong connection pool");
+            }
         }
 
         private static void ReplacementConnectionUsesSemaphoreTest(string connectionString)
@@ -294,6 +291,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
 
             return internalConnection;
+        }
+
+        private static InternalConnectionWrapper CreateEmancipatedConnection(string connectionString)
+        {
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            return new InternalConnectionWrapper(connection);
         }
     }
 }
