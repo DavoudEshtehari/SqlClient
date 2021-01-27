@@ -26,29 +26,30 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             //create a non-pooled connection
             var stringBuilder = new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString) {Pooling = false};
 
-            using var conn = new SqlConnection(stringBuilder.ToString());
+            using (var conn = new SqlConnection(stringBuilder.ToString()))
+            {
+                //initially we have no open physical connections
+                Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
+                    SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
 
-            //initially we have no open physical connections
-            Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
-            Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
-            Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
-                SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
+                conn.Open();
 
-            conn.Open();
+                //when the connection gets opened, the real physical connection appears
+                Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(1, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
+                    SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
 
-            //when the connection gets opened, the real physical connection appears
-            Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
-            Assert.Equal(1, SqlClientEventSourceProps.NonPooledConnections);
-            Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
-                SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
+                conn.Close();
 
-            conn.Close();
-
-            //when the connection gets closed, the real physical connection is also closed
-            Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
-            Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
-            Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
-                SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
+                //when the connection gets closed, the real physical connection is also closed
+                Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
+                    SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
+            }
         }
 
         [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
