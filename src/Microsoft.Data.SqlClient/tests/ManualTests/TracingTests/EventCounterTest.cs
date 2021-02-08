@@ -26,27 +26,30 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             //create a non-pooled connection
             var stringBuilder = new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString) {Pooling = false};
 
+            var ahc = SqlClientEventSourceProps.ActiveHardConnections;
+            var npc = SqlClientEventSourceProps.NonPooledConnections;
+
             using (var conn = new SqlConnection(stringBuilder.ToString()))
             {
                 //initially we have no open physical connections
-                Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(ahc, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(npc, SqlClientEventSourceProps.NonPooledConnections);
                 Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
                     SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
 
                 conn.Open();
 
                 //when the connection gets opened, the real physical connection appears
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(ahc + 1, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(npc + 1, SqlClientEventSourceProps.NonPooledConnections);
                 Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
                     SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
 
                 conn.Close();
 
                 //when the connection gets closed, the real physical connection is also closed
-                Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(ahc, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(npc, SqlClientEventSourceProps.NonPooledConnections);
                 Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
                     SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
             }
@@ -58,16 +61,24 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             //create a pooled connection
             var stringBuilder = new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString) {Pooling = true};
 
+            var ahc = SqlClientEventSourceProps.ActiveHardConnections;
+            var asc = SqlClientEventSourceProps.ActiveSoftConnections;
+            var pc = SqlClientEventSourceProps.PooledConnections;
+            var npc = SqlClientEventSourceProps.NonPooledConnections;
+            var acp = SqlClientEventSourceProps.ActiveConnectionPools;
+            var ac = SqlClientEventSourceProps.ActiveConnections;
+            var fc = SqlClientEventSourceProps.FreeConnections;
+
             using (var conn = new SqlConnection(stringBuilder.ToString()))
             {
                 //initially we have no open physical connections
-                Assert.Equal(0, SqlClientEventSourceProps.ActiveHardConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.ActiveSoftConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.PooledConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.ActiveConnectionPools);
-                Assert.Equal(0, SqlClientEventSourceProps.ActiveConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.FreeConnections);
+                Assert.Equal(ahc, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(asc, SqlClientEventSourceProps.ActiveSoftConnections);
+                Assert.Equal(pc, SqlClientEventSourceProps.PooledConnections);
+                Assert.Equal(npc, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(acp, SqlClientEventSourceProps.ActiveConnectionPools);
+                Assert.Equal(ac, SqlClientEventSourceProps.ActiveConnections);
+                Assert.Equal(fc, SqlClientEventSourceProps.FreeConnections);
                 Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
                     SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
                 Assert.Equal(SqlClientEventSourceProps.ActiveSoftConnections,
@@ -77,13 +88,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
                 //when the connection gets opened, the real physical connection appears
                 //and the appropriate pooling infrastructure gets deployed
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveSoftConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.PooledConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnectionPools);
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.FreeConnections);
+                Assert.Equal(ahc + 1, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(asc + 1, SqlClientEventSourceProps.ActiveSoftConnections);
+                Assert.Equal(pc + 1, SqlClientEventSourceProps.PooledConnections);
+                Assert.Equal(npc, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(acp + 1, SqlClientEventSourceProps.ActiveConnectionPools);
+                Assert.Equal(ac + 1, SqlClientEventSourceProps.ActiveConnections);
+                Assert.Equal(fc, SqlClientEventSourceProps.FreeConnections);
                 Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
                     SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
                 Assert.Equal(SqlClientEventSourceProps.ActiveSoftConnections,
@@ -92,13 +103,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 conn.Close();
 
                 //when the connection gets closed, the real physical connection gets returned to the pool
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.ActiveSoftConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.PooledConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnectionPools);
-                Assert.Equal(0, SqlClientEventSourceProps.ActiveConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.FreeConnections);
+                Assert.Equal(ahc + 1, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(asc + 0, SqlClientEventSourceProps.ActiveSoftConnections);
+                Assert.Equal(pc + 1, SqlClientEventSourceProps.PooledConnections);
+                Assert.Equal(npc, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(acp + 1, SqlClientEventSourceProps.ActiveConnectionPools);
+                Assert.Equal(ac, SqlClientEventSourceProps.ActiveConnections);
+                Assert.Equal(fc + 1, SqlClientEventSourceProps.FreeConnections);
                 Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
                     SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
                 Assert.Equal(SqlClientEventSourceProps.ActiveSoftConnections,
@@ -110,13 +121,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 conn2.Open();
 
                 //the next open connection will reuse the underlying physical connection
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveHardConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveSoftConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.PooledConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.NonPooledConnections);
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnectionPools);
-                Assert.Equal(1, SqlClientEventSourceProps.ActiveConnections);
-                Assert.Equal(0, SqlClientEventSourceProps.FreeConnections);
+                Assert.Equal(ahc + 1, SqlClientEventSourceProps.ActiveHardConnections);
+                Assert.Equal(asc + 1, SqlClientEventSourceProps.ActiveSoftConnections);
+                Assert.Equal(pc + 1, SqlClientEventSourceProps.PooledConnections);
+                Assert.Equal(npc, SqlClientEventSourceProps.NonPooledConnections);
+                Assert.Equal(acp + 1, SqlClientEventSourceProps.ActiveConnectionPools);
+                Assert.Equal(ac + 1, SqlClientEventSourceProps.ActiveConnections);
+                Assert.Equal(fc, SqlClientEventSourceProps.FreeConnections);
                 Assert.Equal(SqlClientEventSourceProps.ActiveHardConnections,
                     SqlClientEventSourceProps.HardConnects - SqlClientEventSourceProps.HardDisconnects);
                 Assert.Equal(SqlClientEventSourceProps.ActiveSoftConnections,
