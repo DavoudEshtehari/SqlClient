@@ -13,6 +13,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
     public static class SqlCredentialTest
     {
 
+        [ActiveIssue(9196)]
         [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
         public static void CreateSqlConnectionWithCredential()
         {
@@ -120,6 +121,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
+        [ActiveIssue(9196)]
         [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
         public static void OldCredentialsShouldFail()
         {
