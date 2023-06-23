@@ -278,9 +278,6 @@
     <Compile Include="SQL\SqlCommand\SqlCommandStoredProcTest.cs" />
     <Compile Include="TracingTests\TestTdsServer.cs" />
     <Compile Include="XUnitAssemblyAttributes.cs" />
-    <Compile Include="$(CommonTestPath)\System\Collections\DictionaryExtensions.cs">
-      <Link>Common\System\Collections\DictionaryExtensions.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="SQL\UdtTest\UDTs\Address\Address.csproj">
