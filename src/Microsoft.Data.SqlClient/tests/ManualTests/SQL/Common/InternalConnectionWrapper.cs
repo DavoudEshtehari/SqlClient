@@ -10,6 +10,20 @@ using Microsoft.Data.SqlClient.ManualTesting.Tests.SystemDataInternals;
 
 namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 {
+    internal static class DictionaryExtensions
+    {
+        public static bool TryAdd<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value)
+        {
+            if (!dict.ContainsKey(key))
+            {
+                dict.Add(key, value);
+                return true;
+            }
+
+            return false;
+        }
+    }
+
     public class InternalConnectionWrapper
     {
         private static Dictionary<string, string> s_killByTSqlConnectionStrings = new Dictionary<string, string>();
