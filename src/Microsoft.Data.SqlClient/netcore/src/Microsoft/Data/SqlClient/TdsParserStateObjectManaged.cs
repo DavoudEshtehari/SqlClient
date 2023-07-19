@@ -50,11 +50,22 @@ namespace Microsoft.Data.SqlClient.SNI
         protected override uint SNIPacketGetData(PacketHandle packet, byte[] _inBuff, ref uint dataSize)
             => SNIProxy.GetInstance().PacketGetData(packet.ManagedPacket, _inBuff, ref dataSize);
 
-        internal override void CreatePhysicalSNIHandle(string serverName, bool ignoreSniOpenTimeout, long timerExpire, out byte[] instanceName, ref byte[][] spnBuffer, bool flushCache, bool async, bool parallel, 
-                                           SqlConnectionIPAddressPreference iPAddressPreference, string cachedFQDN, ref SQLDNSInfo pendingDNSInfo, bool isIntegratedSecurity)
+        internal override void CreatePhysicalSNIHandle(string serverName,
+                                                       bool ignoreSniOpenTimeout,
+                                                       long timerExpire,
+                                                       out byte[] instanceName,
+                                                       ref byte[][] spnBuffer,
+                                                       bool flushCache,
+                                                       bool async,
+                                                       bool parallel,
+                                                       SqlConnectionIPAddressPreference iPAddressPreference,
+                                                       string cachedFQDN,
+                                                       ref SQLDNSInfo pendingDNSInfo,
+                                                       bool isIntegratedSecurity,
+                                                       bool tlsFirst = false)
         {
             _sessionHandle = SNIProxy.GetInstance().CreateConnectionHandle(serverName, ignoreSniOpenTimeout, timerExpire, out instanceName, ref spnBuffer, flushCache, async, parallel, isIntegratedSecurity, 
-                                                        iPAddressPreference, cachedFQDN, ref pendingDNSInfo);
+                                                        iPAddressPreference, cachedFQDN, ref pendingDNSInfo, tlsFirst);
             if (_sessionHandle == null)
             {
                 _parser.ProcessSNIError(this);
@@ -265,7 +276,7 @@ namespace Microsoft.Data.SqlClient.SNI
             return TdsEnums.SNI_ERROR;
         }
 
-        internal override uint EnableSsl(ref uint info) => SNIProxy.GetInstance().EnableSsl(Handle, info);
+        internal override uint EnableSsl(ref uint info, bool tlsFirst) => SNIProxy.GetInstance().EnableSsl(Handle, info);
 
         internal override uint SetConnectionBufferSize(ref uint unsignedPacketSize) => SNIProxy.GetInstance().SetConnectionBufferSize(Handle, unsignedPacketSize);
 

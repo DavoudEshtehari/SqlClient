@@ -29,6 +29,7 @@ namespace Microsoft.Data.SqlClient
             internal const string Current_Language = _emptyString;
             internal const string Data_Source = _emptyString;
             internal const bool Encrypt = false;
+            internal const bool StrictEncryption = false;
             internal const bool Enlist = true;
             internal const string FailoverPartner = _emptyString;
             internal const string Initial_Catalog = _emptyString;
@@ -79,6 +80,7 @@ namespace Microsoft.Data.SqlClient
             internal const string Current_Language = "current language";
             internal const string Data_Source = "data source";
             internal const string Encrypt = "encrypt";
+            internal const string StrictEncryption = "strict encryption v3.2";
             internal const string Enlist = "enlist";
             internal const string FailoverPartner = "failover partner";
             internal const string Initial_Catalog = "initial catalog";
@@ -160,13 +162,15 @@ namespace Microsoft.Data.SqlClient
             internal const string User = "user";
             // workstation id
             internal const string WSID = "wsid";
+            // stric encryption
+            internal const string STRICTENCRYPTION = "strictencryptionv3.2";
             // make sure to update SynonymCount value below when adding or removing synonyms
         }
 
 #if NETCOREAPP
-        internal const int SynonymCount = 26;
+        internal const int SynonymCount = 27;
 #else
-        internal const int SynonymCount = 25;
+        internal const int SynonymCount = 26;
 #endif
         internal const int DeprecatedSynonymCount = 3;
 
@@ -205,6 +209,7 @@ namespace Microsoft.Data.SqlClient
         private readonly bool _integratedSecurity;
 
         private readonly bool _encrypt;
+        private readonly bool _strictEncryption;
         private readonly bool _trustServerCertificate;
         private readonly bool _enlist;
         private readonly bool _mars;
@@ -267,6 +272,7 @@ namespace Microsoft.Data.SqlClient
             _poolBlockingPeriod = ConvertValueToPoolBlockingPeriod();
 #endif
             _encrypt = ConvertValueToBoolean(KEY.Encrypt, DEFAULT.Encrypt);
+            _strictEncryption = ConvertValueToBoolean(KEY.StrictEncryption, DEFAULT.StrictEncryption);
             _enlist = ConvertValueToBoolean(KEY.Enlist, DEFAULT.Enlist);
             _mars = ConvertValueToBoolean(KEY.MARS, DEFAULT.MARS);
             _persistSecurityInfo = ConvertValueToBoolean(KEY.Persist_Security_Info, DEFAULT.Persist_Security_Info);
@@ -561,7 +567,8 @@ namespace Microsoft.Data.SqlClient
         // SQLPT 41700: Ignore ResetConnection=False, always reset the connection for security
         internal bool ConnectionReset { get { return true; } }
         //        internal bool EnableUdtDownload { get { return _enableUdtDownload;} }
-        internal bool Encrypt { get { return _encrypt; } }
+        internal SqlConnectionEncryptOption Encrypt => StrictEncryption ? SqlConnectionEncryptOption.Strict : _encrypt;
+        internal bool StrictEncryption => _strictEncryption; // check if appcontext switch is enabled
         internal bool TrustServerCertificate { get { return _trustServerCertificate; } }
         internal bool Enlist { get { return _enlist; } }
         internal bool MARS { get { return _mars; } }
@@ -672,6 +679,7 @@ namespace Microsoft.Data.SqlClient
                     { KEY.Current_Language, KEY.Current_Language },
                     { KEY.Data_Source, KEY.Data_Source },
                     { KEY.Encrypt, KEY.Encrypt },
+                    { KEY.StrictEncryption, KEY.StrictEncryption },
                     { KEY.Enlist, KEY.Enlist },
                     { KEY.FailoverPartner, KEY.FailoverPartner },
                     { KEY.Initial_Catalog, KEY.Initial_Catalog },
@@ -731,6 +739,7 @@ namespace Microsoft.Data.SqlClient
                     { SYNONYM.UID, KEY.User_ID },
                     { SYNONYM.User, KEY.User_ID },
                     { SYNONYM.WSID, KEY.Workstation_Id },
+                    { SYNONYM.STRICTENCRYPTION, KEY.StrictEncryption },
                     { SYNONYM.IPADDRESSPREFERENCE, KEY.IPAddressPreference }
                 };
                 Debug.Assert(synonyms.Count == count, "incorrect initial ParseSynonyms size");

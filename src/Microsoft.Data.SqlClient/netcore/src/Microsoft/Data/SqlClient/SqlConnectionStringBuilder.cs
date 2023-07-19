@@ -40,6 +40,7 @@ namespace Microsoft.Data.SqlClient
             Replication,
             ConnectTimeout,
             Encrypt,
+            StrictEncryption,
             TrustServerCertificate,
             LoadBalanceTimeout,
             PacketSize,

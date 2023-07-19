@@ -64,7 +64,7 @@ namespace Microsoft.Data.SqlClient
             SNINativeMethodWrapper.ConsumerInfo myInfo = CreateConsumerInfo(async);
 
             SQLDNSInfo cachedDNSInfo;
-            bool ret = SQLFallbackDNSCache.Instance.GetDNSInfo(_parser.FQDNforDNSCahce, out cachedDNSInfo);
+            bool ret = SQLFallbackDNSCache.Instance.GetDNSInfo(_parser.FQDNforDNSCache, out cachedDNSInfo);
 
             _sessionHandle = new SNIHandle(myInfo, nativeSNIObject.Handle, _parser.Connection.ConnectionOptions.IPAddressPreference, cachedDNSInfo);
         }
@@ -137,8 +137,19 @@ namespace Microsoft.Data.SqlClient
             return myInfo;
         }
 
-        internal override void CreatePhysicalSNIHandle(string serverName, bool ignoreSniOpenTimeout, long timerExpire, out byte[] instanceName, ref byte[][] spnBuffer, bool flushCache, bool async, bool fParallel,
-                         SqlConnectionIPAddressPreference ipPreference, string cachedFQDN, ref SQLDNSInfo pendingDNSInfo, bool isIntegratedSecurity)
+        internal override void CreatePhysicalSNIHandle(string serverName,
+                                                       bool ignoreSniOpenTimeout,
+                                                       long timerExpire,
+                                                       out byte[] instanceName,
+                                                       ref byte[][] spnBuffer,
+                                                       bool flushCache,
+                                                       bool async,
+                                                       bool fParallel,
+                                                       SqlConnectionIPAddressPreference ipPreference,
+                                                       string cachedFQDN,
+                                                       ref SQLDNSInfo pendingDNSInfo,
+                                                       bool isIntegratedSecurity,
+                                                       bool tlsFirst)
         {
             // We assume that the loadSSPILibrary has been called already. now allocate proper length of buffer
             spnBuffer = new byte[1][];
@@ -376,7 +387,7 @@ namespace Microsoft.Data.SqlClient
         internal override uint EnableMars(ref uint info)
             => SNINativeMethodWrapper.SNIAddProvider(Handle, SNINativeMethodWrapper.ProviderEnum.SMUX_PROV, ref info);
 
-        internal override uint EnableSsl(ref uint info)
+        internal override uint EnableSsl(ref uint info, bool tlsFirst)
         {
             // Add SSL (Encryption) SNI provider.
             return SNINativeMethodWrapper.SNIAddProvider(Handle, SNINativeMethodWrapper.ProviderEnum.SSL_PROV, ref info);

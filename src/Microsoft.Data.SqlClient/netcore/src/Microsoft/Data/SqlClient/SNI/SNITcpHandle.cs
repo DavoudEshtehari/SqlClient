@@ -27,6 +27,7 @@ namespace Microsoft.Data.SqlClient.SNI
         private readonly object _sendSync;
         private readonly Socket _socket;
         private NetworkStream _tcpStream;
+        private readonly bool _tlsFirst;
 
         private Stream _stream;
         private SslStream _sslStream;
@@ -119,13 +120,22 @@ namespace Microsoft.Data.SqlClient.SNI
         /// <param name="ipPreference">IP address preference</param>
         /// <param name="cachedFQDN">Key for DNS Cache</param>
         /// <param name="pendingDNSInfo">Used for DNS Cache</param>        
-        public SNITCPHandle(string serverName, int port, long timerExpire, bool parallel, SqlConnectionIPAddressPreference ipPreference, string cachedFQDN, ref SQLDNSInfo pendingDNSInfo)
+        /// <param name="tlsFirst">Support TDS8.0</param>
+        public SNITCPHandle(string serverName,
+                            int port,
+                            long timerExpire,
+                            bool parallel,
+                            SqlConnectionIPAddressPreference ipPreference,
+                            string cachedFQDN,
+                            ref SQLDNSInfo pendingDNSInfo,
+                            bool tlsFirst)
         {
             long scopeID = SqlClientEventSource.Log.TrySNIScopeEnterEvent(s_className);
             SqlClientEventSource.Log.TrySNITraceEvent(s_className, EventType.INFO, "Connection Id {0}, Setting server name = {1}", args0: _connectionId, args1: serverName);
             try
             {
                 _targetServer = serverName;
+                _tlsFirst = tlsFirst;
                 _sendSync = new object();
 
                 SQLDNSInfo cachedDNSInfo;
@@ -179,10 +189,13 @@ namespace Microsoft.Data.SqlClient.SNI
                                 string firstCachedIP;
                                 string secondCachedIP;
 
-                                if (SqlConnectionIPAddressPreference.IPv6First == ipPreference) {
+                                if (SqlConnectionIPAddressPreference.IPv6First == ipPreference)
+                                {
                                     firstCachedIP = cachedDNSInfo.AddrIPv6;
                                     secondCachedIP = cachedDNSInfo.AddrIPv4;
-                                } else {
+                                }
+                                else
+                                {
                                     firstCachedIP = cachedDNSInfo.AddrIPv4;
                                     secondCachedIP = cachedDNSInfo.AddrIPv6;
                                 }
@@ -247,8 +260,13 @@ namespace Microsoft.Data.SqlClient.SNI
                     _socket.NoDelay = true;
                     _tcpStream = new SNINetworkStream(_socket, true);
 
-                    _sslOverTdsStream = new SslOverTdsStream(_tcpStream, _connectionId);
-                    _sslStream = new SNISslStream(_sslOverTdsStream, true, new RemoteCertificateValidationCallback(ValidateServerCertificate));
+                    Stream stream = _tcpStream;
+                    if (!_tlsFirst)
+                    {
+                        _sslOverTdsStream = new SslOverTdsStream(_tcpStream, _connectionId);
+                        stream = _sslOverTdsStream;
+                    }
+                    _sslStream = new SNISslStream(stream, true, new RemoteCertificateValidationCallback(ValidateServerCertificate));
                 }
                 catch (SocketException se)
                 {
@@ -339,8 +357,8 @@ namespace Microsoft.Data.SqlClient.SNI
             IPAddress[] ipAddresses = Dns.GetHostAddresses(serverName);
 
             string IPv4String = null;
-            string IPv6String = null;         
-            
+            string IPv6String = null;
+
             // Returning null socket is handled by the caller function.
             if (ipAddresses == null || ipAddresses.Length == 0)
             {
@@ -434,7 +452,7 @@ namespace Microsoft.Data.SqlClient.SNI
 
                     // If we have already got a valid Socket, or the platform default was prefered
                     // we won't do the second traversal.
-                    if (availableSocket != null || ipPreference == SqlConnectionIPAddressPreference.UsePlatformDefault) 
+                    if (availableSocket != null || ipPreference == SqlConnectionIPAddressPreference.UsePlatformDefault)
                     {
                         break;
                     }
@@ -584,8 +602,15 @@ namespace Microsoft.Data.SqlClient.SNI
 
             try
             {
-                _sslStream.AuthenticateAsClient(_targetServer);
-                _sslOverTdsStream.FinishHandshake();
+                if (_tlsFirst)
+                {
+                    AuthenticateAsClient(_sslStream, _targetServer, null);
+                }
+                else
+                {
+                    _sslStream.AuthenticateAsClient(_targetServer);
+                }
+                _sslOverTdsStream?.FinishHandshake();
             }
             catch (AuthenticationException aue)
             {
@@ -610,7 +635,7 @@ namespace Microsoft.Data.SqlClient.SNI
         {
             _sslStream.Dispose();
             _sslStream = null;
-            _sslOverTdsStream.Dispose();
+            _sslOverTdsStream?.Dispose();
             _sslOverTdsStream = null;
             _stream = _tcpStream;
             SqlClientEventSource.Log.TrySNITraceEvent(s_className, EventType.INFO, "Connection Id {0}, SSL Disabled. Communication will continue on TCP Stream.", args0: _connectionId);
@@ -631,6 +656,16 @@ namespace Microsoft.Data.SqlClient.SNI
                 SqlClientEventSource.Log.TrySNITraceEvent(s_className, EventType.INFO, "Connection Id {0}, Certificate will not be validated.", args0: _connectionId);
                 return true;
             }
+
+            //string serverNameToValidate;
+            //if (!string.IsNullOrEmpty(_hostNameInCertificate))
+            //{
+            //    serverNameToValidate = _hostNameInCertificate;
+            //}
+            //else
+            //{
+            //    serverNameToValidate = _targetServer;
+            //}
 
             SqlClientEventSource.Log.TrySNITraceEvent(s_className, EventType.INFO, "Connection Id {0}, Certificate will be validated for Target Server name", args0: _connectionId);
             return SNICommon.ValidateSslServerCertificate(_targetServer, cert, policyErrors);
