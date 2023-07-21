@@ -1861,6 +1861,7 @@ namespace Microsoft.Data.SqlClient
                     AttemptOneLogin(serverInfo,
                                         newPassword,
                                         newSecurePassword,
+                                        !isParallel,    // ignore timeout for SniOpen call unless MSF , and TNIR
                                         attemptOneLoginTimeout,
                                         isFirstTransparentAttempt: isFirstTransparentAttempt,
                                         disableTnir: disableTnir);
@@ -2136,6 +2137,7 @@ namespace Microsoft.Data.SqlClient
                             currentServerInfo,
                             newPassword,
                             newSecurePassword,
+                            false,          // Use timeout in SniOpen
                             intervalTimer,
                             withFailover: true
                             );
@@ -2173,6 +2175,7 @@ namespace Microsoft.Data.SqlClient
                                 currentServerInfo,
                                 newPassword,
                                 newSecurePassword,
+                                false,          // Use timeout in SniOpen
                                 intervalTimer,
                                 withFailover: true
                                 );
@@ -2290,7 +2293,7 @@ namespace Microsoft.Data.SqlClient
         }
 
         // Common code path for making one attempt to establish a connection and log in to server.
-        private void AttemptOneLogin(ServerInfo serverInfo, string newPassword, SecureString newSecurePassword, TimeoutTimer timeout, bool withFailover = false, bool isFirstTransparentAttempt = true, bool disableTnir = false)
+        private void AttemptOneLogin(ServerInfo serverInfo, string newPassword, SecureString newSecurePassword, bool ignoreSniOpenTimeout, TimeoutTimer timeout, bool withFailover = false, bool isFirstTransparentAttempt = true, bool disableTnir = false)
         {
             SqlClientEventSource.Log.TryAdvancedTraceEvent("<sc.SqlInternalConnectionTds.AttemptOneLogin|ADV> {0}, timout={1}[msec], server={2}", ObjectID, timeout.MillisecondsRemaining, serverInfo.ExtendedServerName);
 
@@ -2300,6 +2303,7 @@ namespace Microsoft.Data.SqlClient
 
             _parser.Connect(serverInfo,
                             this,
+                            ignoreSniOpenTimeout,
                             timeout.LegacyTimerExpire,
                             ConnectionOptions,
                             withFailover,

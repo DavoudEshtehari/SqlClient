@@ -279,6 +279,7 @@ namespace Microsoft.Data.SqlClient
 
         internal void CreatePhysicalSNIHandle(
             string serverName,
+            bool ignoreSniOpenTimeout,
             long timerExpire,
             out byte[] instanceName,
             byte[] spnBuffer,
@@ -317,7 +318,7 @@ namespace Microsoft.Data.SqlClient
 
             _ = SQLFallbackDNSCache.Instance.GetDNSInfo(cachedFQDN, out SQLDNSInfo cachedDNSInfo);
 
-            _sessionHandle = new SNIHandle(myInfo, serverName, spnBuffer, checked((int)timeout),
+            _sessionHandle = new SNIHandle(myInfo, serverName, spnBuffer, ignoreSniOpenTimeout, checked((int)timeout),
                 out instanceName, flushCache, !async, fParallel, transparentNetworkResolutionState, totalTimeout,
                 ipPreference, cachedDNSInfo, hostNameInCertificate);
         }
