@@ -264,7 +264,7 @@ namespace Microsoft.Data.SqlClient.Tests
         {
             // Start a server with connection timeout from the inline data.
             using TestTdsServer server = TestTdsServer.StartTestServer(false, false, timeout);
-            using SqlConnection connection = new SqlConnection(server.ConnectionString);
+            using SqlConnection connection = new SqlConnection(server.ConnectionString +"; pooling=false;");
 
             // Dispose the server to force connection timeout 
             server.Dispose();
@@ -303,7 +303,7 @@ namespace Microsoft.Data.SqlClient.Tests
         {
             // Start a server with connection timeout from the inline data.
             using TestTdsServer server = TestTdsServer.StartTestServer(false, false, timeout);
-            using SqlConnection connection = new SqlConnection(server.ConnectionString);
+            using SqlConnection connection = new SqlConnection(server.ConnectionString + "; pooling=false;");
 
             // Dispose the server to force connection timeout 
             server.Dispose();
