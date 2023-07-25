@@ -315,8 +315,10 @@ namespace Microsoft.Data.SqlClient.Tests
             // Open a connection with the server disposed.
             try
             {
+                //an asyn call with a timeout token to cancel the operation after the specific time
+                CancellationToken token = new CancellationTokenSource(timeout * 1000).Token;
                 timer.Start();
-                await connection.OpenAsync();
+                await connection.OpenAsync(token).ConfigureAwait(false);
             }
             catch (Exception e)
             {
