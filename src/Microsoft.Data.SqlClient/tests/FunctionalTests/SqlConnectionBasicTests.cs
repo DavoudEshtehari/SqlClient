@@ -316,9 +316,9 @@ namespace Microsoft.Data.SqlClient.Tests
             try
             {
                 //an asyn call with a timeout token to cancel the operation after the specific time
-                CancellationToken token = new CancellationTokenSource(timeout * 1000).Token;
+                using CancellationTokenSource cts  = new CancellationTokenSource(timeout * 1000);
                 timer.Start();
-                await connection.OpenAsync(token).ConfigureAwait(false);
+                await connection.OpenAsync(cts.Token).ConfigureAwait(false);
             }
             catch (Exception e)
             {
