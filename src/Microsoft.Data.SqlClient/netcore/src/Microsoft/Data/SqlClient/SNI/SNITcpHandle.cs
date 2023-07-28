@@ -320,8 +320,11 @@ namespace Microsoft.Data.SqlClient.SNI
         {
             Socket availableSocket = null;
             Task<Socket> connectTask;
+            TimeSpan timeout = ts;
 
-            IPAddress[] serverAddresses = SNICommon.GetDnsIpAddresses(hostName);
+            IPAddress[] serverAddresses = isInfiniteTimeOut
+                    ? SNICommon.GetDnsIpAddresses(hostName)
+                    : SNICommon.GetDnsIpAddresses(hostName, ref timeout);
 
             if (serverAddresses.Length > MaxParallelIpAddresses)
             {
@@ -354,7 +357,7 @@ namespace Microsoft.Data.SqlClient.SNI
 
             connectTask = ParallelConnectAsync(serverAddresses, port);
 
-            if (!(isInfiniteTimeOut ? connectTask.Wait(-1) : connectTask.Wait(ts)))
+            if (!(isInfiniteTimeOut ? connectTask.Wait(-1) : connectTask.Wait(timeout)))
             {
                 callerReportError = false;
                 SqlClientEventSource.Log.TrySNITraceEvent(nameof(SNITCPHandle), EventType.ERR, "Connection Id {0} Connection timed out, Exception: {1}", args0: _connectionId, args1: Strings.SNI_ERROR_40);
