@@ -186,7 +186,7 @@ namespace Microsoft.Data.SqlClient.SNI
                     catch (Exception ex)
                     {
                         TimeSpan timeLeft = ts - stopwatch.Elapsed;
-                        if (timeLeft <= TimeSpan.Zero)
+                        if (!isInfiniteTimeOut && timeLeft <= TimeSpan.Zero)
                         {
                             throw;
                         }
@@ -231,7 +231,7 @@ namespace Microsoft.Data.SqlClient.SNI
                                 catch (Exception exRetry)
                                 {
                                     timeLeft = ts - stopwatch.Elapsed;
-                                    if (timeLeft <= TimeSpan.Zero)
+                                    if (!isInfiniteTimeOut && timeLeft <= TimeSpan.Zero)
                                     {
                                         throw;
                                     }
@@ -442,20 +442,25 @@ namespace Microsoft.Data.SqlClient.SNI
                     bool isConnected;
                     try // catching SocketException with SocketErrorCode == WouldBlock to run Socket.Select
                     {
-                        TimeSpan timeLeft = timeout - timeTaken.Elapsed - TimeSpan.FromMilliseconds(400);
-                        if (timeLeft <= TimeSpan.Zero)
+                        if (isInfiniteTimeout)
                         {
-                            return null;
+                            socket.Connect(ipAddress, port);
                         }
-                        Task socketConnectTask = new Task(() => socket.Connect(ipAddress, port));
-                        socketConnectTask.ConfigureAwait(false);
-                        socketConnectTask.Start();
-                        if (!socketConnectTask.Wait(timeLeft))
+                        else
                         {
-                            throw ADP.TimeoutException($"The socket couldn't connect during the expected {timeLeft} remaining time to connect.");
-                        }
-                        if (!isInfiniteTimeout)
-                        {
+                            TimeSpan timeLeft = timeout - timeTaken.Elapsed;
+                            if (timeLeft <= TimeSpan.Zero)
+                            {
+                                return null;
+                            }
+                            // Socket.Connect does not support infinite timeouts, so we use Task to simulate it
+                            Task socketConnectTask = new Task(() => socket.Connect(ipAddress, port));
+                            socketConnectTask.ConfigureAwait(false);
+                            socketConnectTask.Start();
+                            if (!socketConnectTask.Wait(timeLeft))
+                            {
+                                throw ADP.TimeoutException($"The socket couldn't connect during the expected {timeLeft} remaining time to connect.");
+                            }
                             throw SQL.SocketDidNotThrow();
                         }
 
@@ -479,8 +484,10 @@ namespace Microsoft.Data.SqlClient.SNI
                         do
                         {
                             TimeSpan timeLeft = timeout - timeTaken.Elapsed;
-                            if (timeLeft <= TimeSpan.Zero)
+                            if (!isInfiniteTimeout && timeLeft <= TimeSpan.Zero)
+                            {
                                 return null;
+                            }
 
                             int socketSelectTimeout =
                                 checked((int)(Math.Min(timeLeft.TotalMilliseconds, int.MaxValue / 1000) * 1000));
