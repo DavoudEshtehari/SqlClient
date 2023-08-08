@@ -276,8 +276,9 @@ namespace Microsoft.Data.SqlClient
                     result = await TryAcquireTokenSilent(app, parameters, scopes, cts).ConfigureAwait(false);
                     SqlClientEventSource.Log.TryTraceEvent("AcquireTokenAsync | Acquired access token (silent) for {0} auth mode. Expiry Time: {1}", parameters.AuthenticationMethod, result?.ExpiresOn);
                 }
-                catch (MsalUiRequiredException)
+                catch (MsalUiRequiredException ex)
                 {
+                    TryTraceMSALExceptionEvent(EventType.ERR, ex, "AcquireTokenSilent failed. Attempting interactive authentication.");
                     // An 'MsalUiRequiredException' is thrown in the case where an interaction is required with the end user of the application,
                     // for instance, if no refresh token was in the cache, or the user needs to consent, or re-sign-in (for instance if the password expired),
                     // or the user needs to perform two factor authentication.
@@ -299,6 +300,18 @@ namespace Microsoft.Data.SqlClient
             }
 
             return new SqlAuthenticationToken(result.AccessToken, result.ExpiresOn);
+        }
+
+        private static void TryTraceMSALExceptionEvent(string eventType, MsalException msalException, string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            if (SqlClientEventSource.Log.IsTraceEnabled())
+            {
+                SqlClientEventSource.Log.Trace($"{nameof(ActiveDirectoryAuthenticationProvider)}.{memberName}{eventType}{message}. Exception {msalException?.GetType().Name}:{msalException?.Message}");
+            }
+            if (SqlClientEventSource.Log.IsAdvancedTraceOn())
+            {
+                SqlClientEventSource.Log.AdvancedTrace($"{nameof(ActiveDirectoryAuthenticationProvider)}.{memberName}{eventType}{message}. Exception {msalException?.GetType().FullName}:{msalException}");
+            }
         }
 
         private static async Task<AuthenticationResult> TryAcquireTokenSilent(IPublicClientApplication app, SqlAuthenticationParameters parameters,
@@ -345,6 +358,7 @@ namespace Microsoft.Data.SqlClient
         private static async Task<AuthenticationResult> AcquireTokenInteractiveDeviceFlowAsync(IPublicClientApplication app, string[] scopes, Guid connectionId, string userId,
             SqlAuthenticationMethod authenticationMethod, CancellationTokenSource cts, ICustomWebUi customWebUI, Func<DeviceCodeResult, Task> deviceCodeFlowCallback)
         {
+            int executionFlow = 0;
             try
             {
                 if (authenticationMethod == SqlAuthenticationMethod.ActiveDirectoryInteractive)
@@ -364,6 +378,7 @@ namespace Microsoft.Data.SqlClient
 #endif
                     if (customWebUI != null)
                     {
+                        executionFlow = 1;
                         return await app.AcquireTokenInteractive(scopes)
                             .WithCorrelationId(connectionId)
                             .WithCustomWebUi(customWebUI)
@@ -373,6 +388,7 @@ namespace Microsoft.Data.SqlClient
                     }
                     else
                     {
+                        executionFlow = 2;
                         /*
                          * We will use the MSAL Embedded or System web browser which changes by Default in MSAL according to this table:
                          *
@@ -399,6 +415,7 @@ namespace Microsoft.Data.SqlClient
                 }
                 else
                 {
+                    executionFlow = 3;
                     AuthenticationResult result = await app.AcquireTokenWithDeviceCode(scopes,
                         deviceCodeResult => deviceCodeFlowCallback(deviceCodeResult))
                         .WithCorrelationId(connectionId)
@@ -406,6 +423,24 @@ namespace Microsoft.Data.SqlClient
                         .ConfigureAwait(false);
                     return result;
                 }
+            }
+            catch (MsalException ex)
+            {
+                switch (executionFlow)
+                {
+                    case 1:
+                        TryTraceMSALExceptionEvent(EventType.ERR, ex, $"AcquireTokenInteractive failed. Attempting interactive authentication with CustomWebUI.");
+                        break;
+                    case 2:
+                        TryTraceMSALExceptionEvent(EventType.ERR, ex, $"AcquireTokenInteractive failed. Attempting interactive authentication without CustomWebUI.");
+                        break;
+                    case 3:
+                        TryTraceMSALExceptionEvent(EventType.ERR, ex, $"AcquireTokenWithDeviceCode failed. Attempting device code authentication.");
+                        break;
+                    default:
+                        break;
+                }
+                throw;
             }
             catch (OperationCanceledException)
             {
