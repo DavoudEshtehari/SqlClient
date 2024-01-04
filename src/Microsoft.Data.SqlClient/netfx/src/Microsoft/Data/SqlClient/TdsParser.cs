@@ -1483,7 +1483,6 @@ namespace Microsoft.Data.SqlClient
                         }
 
                         // Check if the server will accept CTAIP.
-                        //
                         serverSupportsCTAIP = (serverOption & EncryptionOptions.CTAIP) != 0;
 
                         break;
