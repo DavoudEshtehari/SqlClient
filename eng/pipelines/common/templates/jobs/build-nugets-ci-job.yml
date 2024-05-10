@@ -12,6 +12,14 @@ parameters:
     type: string
     default: ADO-MMS22-SQL19
 
+  - name: artifactName
+    type: string
+    default: Artifacts
+
+  - name: prebuildSteps
+    type: stepList
+    default: []
+
 jobs:
 - job: build_nugets
 
@@ -25,6 +33,9 @@ jobs:
     - template: ../../../libraries/build-ci-variables.yml
 
   steps:
+  - ${{ if ne(parameters.prebuildSteps, '') }}:
+    - ${{ parameters.prebuildSteps }}
+
   - task: MSBuild@1
     displayName: 'Restore nugets'
     inputs:
@@ -41,7 +52,6 @@ jobs:
       configuration: '$(Configuration)'
       msbuildArguments: '-t:BuildAllConfigurations -p:GenerateNuGet=false -p:BuildNumber=$(BuildNumber)'
       clean: true
-    retryCountOnTaskFailure: 1
 
   - task: MSBuild@1
     displayName: 'Build AKV Provider NetFx'
@@ -62,12 +72,12 @@ jobs:
       msbuildArguments: '-t:BuildAKVNetCoreAllOS -p:BuildNumber=$(BuildNumber)'
 
   - task: NuGetToolInstaller@1
-    displayName: 'Use NuGet '
+    displayName: 'Use NuGet'
     inputs:
       checkLatest: true
 
   - task: NuGetCommand@2
-    displayName: 'NuGet pack Microsoft.Data.SqlClient'
+    displayName: 'NuGet pack M.D.SqlClient'
     inputs:
       command: pack
       packagesToPack: tools/specs/Microsoft.Data.SqlClient.nuspec
@@ -78,13 +88,14 @@ jobs:
   - task: NuGetCommand@2
     displayName: 'NuGet pack AKV Provider'
     inputs:
-      command: custom
+      command: pack
+      packagesToPack: 'tools/specs/add-ons/Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.nuspec'
+      configuration: '$(Configuration)'
       versioningScheme: byEnvVar
       versionEnvVar: NugetPackageVersion
       buildProperties: 'ReferenceType=Project'
-      arguments: 'pack -Symbols -SymbolPackageFormat snupkg $(Build.SourcesDirectory)/tools/specs/add-ons/Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.nuspec -Version $(NugetPackageVersion) -OutputDirectory $(Build.ArtifactStagingDirectory) -properties "Configuration=$(Configuration);ReferenceType=Project"'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Artifacts'
     inputs:
-      ArtifactName: Artifacts
+      ArtifactName: ${{ parameters.artifactName }}

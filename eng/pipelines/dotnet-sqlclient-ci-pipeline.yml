@@ -44,3 +44,5 @@ stages:
 - stage: buildAKV
   jobs:
   - template: common/templates/jobs/build-nugets-ci-job.yml
+    parameters:
+      artifactName: Artifacts123
