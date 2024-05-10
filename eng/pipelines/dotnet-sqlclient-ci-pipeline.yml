@@ -38,11 +38,19 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 - name: 'debug'
   displayName: 'Enable debug output'
   type: boolean
-  default: true
+  default: false
+
+variables:
+  - name: artifactName
+    value: Artifacts
 
 stages:
 - stage: buildAKV
   jobs:
   - template: common/templates/jobs/build-nugets-ci-job.yml
     parameters:
-      artifactName: Artifacts123
+      artifactName: $(artifactName)
+      prebuildSteps:
+        - script: echo 'This is a prebuild step'
+        - script: echo 'This is another prebuild step'
+        - script: echo 'This is a third prebuild step'
