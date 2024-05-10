@@ -20,20 +20,14 @@ parameters:
 
   - name: configProperties
     type: object
-    default: []
-      # - key: 'value'
+    default: [] # - key: 'value'
 
   - name: prebuildSteps
     type: stepList
     default: []
 
-  - name: dependsOn
-    type: string
-
 jobs:
-- job: ${{ format('build_runTests[{0}]', coalesce(parameters.jobDisplayName, parameters.imageOverride, '-') }}
-  ${{ if ne(parameters.dependsOn, '')}}:
-    dependsOn: '${{parameters.dependsOn }}'
+- job: ${{ format('build_runTests_{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, '-')) }}
 
   pool:
     name: ${{parameters.poolName }}
@@ -44,8 +38,8 @@ jobs:
     - template: ../../../libraries/build-ci-variables.yml
 
   steps:
-  - ${{ if ne(parameters.prebuildSteps, '') }}:
-      ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
-  
-  - ${{ each pair in parameters.configProperties }}:
-    - script: echo "Key: ${{ pair.key }} - Value: ${{ pair.value }}"
+    - ${{ if ne(parameters.prebuildSteps, '') }}:
+      - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
+
+    - ${{ each pair in parameters.configProperties }}:
+      - script: echo 'Key[${{ pair.key }}] - Value[${{ pair.value }}]'
