@@ -1,0 +1,51 @@
+#################################################################################
+# Licensed to the .NET Foundation under one or more agreements.                 #
+# The .NET Foundation licenses this file to you under the MIT license.          #
+# See the LICENSE file in the project root for more information.                #
+#################################################################################
+parameters:
+  - name: poolName
+    type: string
+    default: ADO-1ES-Pool
+
+  - name: imageOverride
+    type: object
+
+  - name: jobDisplayName
+    type: string
+
+  - name: artifactName
+    type: string
+    default: Artifacts
+
+  - name: configProperties
+    type: object
+    default: []
+      # - key: 'value'
+
+  - name: prebuildSteps
+    type: stepList
+    default: []
+
+  - name: dependsOn
+    type: string
+
+jobs:
+- job: ${{ format('build_runTests[{0}]', coalesce(parameters.jobDisplayName, parameters.imageOverride, '-') }}
+  ${{ if ne(parameters.dependsOn, '')}}:
+    dependsOn: '${{parameters.dependsOn }}'
+
+  pool:
+    name: ${{parameters.poolName }}
+    demands:
+    - imageOverride -equals ${{ parameters.imageOverride }}
+
+  variables:
+    - template: ../../../libraries/build-ci-variables.yml
+
+  steps:
+  - ${{ if ne(parameters.prebuildSteps, '') }}:
+      ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
+  
+  - ${{ each pair in parameters.configProperties }}:
+    - script: echo "Key: ${{ pair.key }} - Value: ${{ pair.value }}"

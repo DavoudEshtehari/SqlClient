@@ -45,12 +45,21 @@ variables:
     value: Artifacts
 
 stages:
-- stage: buildAKV
+- stage: build
   jobs:
   - template: common/templates/jobs/build-nugets-ci-job.yml
     parameters:
       artifactName: $(artifactName)
-      prebuildSteps:
-        - script: echo 'This is a prebuild step'
-        - script: echo 'This is another prebuild step'
-        - script: echo 'This is a third prebuild step'
+
+- stage: test_windows2022
+  dependsOn: build
+  jobs:
+  - template: common/templates/jobs/run-tests-ci-job.yml
+    parameters:
+      poolName: ADO-1ES-Pool
+      jobDisplayName: 'Win 2022 SQL 2019'
+      imageOverride: ADO-MMS22-SQL19
+      configProperties:
+        - TCPConnectionString: $(SQL_TCP_CONN_STRING)
+        - NPConnectionString: $(SQL_NP_CONN_STRING)
+        - AADAuthorityURL: $(AADAuthorityURL)
