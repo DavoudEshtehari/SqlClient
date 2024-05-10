@@ -1,0 +1,42 @@
+#################################################################################
+# Licensed to the .NET Foundation under one or more agreements.                 #
+# The .NET Foundation licenses this file to you under the MIT license.          #
+# See the LICENSE file in the project root for more information.                #
+#################################################################################
+
+name: $(Year:YY)$(DayOfYear)$(Rev:.rr)
+
+
+parameters: # parameters are shown up in ADO UI in a build queue time
+- name: 'debug'
+  displayName: 'Enable debug output'
+  type: boolean
+  default: true
+
+- name: configProperties
+  type: object
+  default:
+    - TCPConnectionString: $(SQL_TCP_CONN_STRING)
+    - NPConnectionString: $(SQL_NP_CONN_STRING)
+    - AADAuthorityURL: $(AADAuthorityURL)
+
+variables:
+  # - template: libraries/ci-configuration-variables.yml
+  - name: artifactName
+    value: Artifacts
+
+stages:
+- stage: test1
+  jobs:
+
+  - job: job1
+    pool: 
+      vmImage: 'windows-latest'
+
+    steps:
+    - script: SET
+      displayName: 'Print Environment Variables'
+
+    - ${{ each pair in parameters.configProperties }}:
+      - script: echo '${{ pair.value }}'
+        displayName: 'Print Config Properties ${{ pair.key }}'
