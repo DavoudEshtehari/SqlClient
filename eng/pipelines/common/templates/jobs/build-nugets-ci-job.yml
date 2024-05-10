@@ -1,0 +1,90 @@
+#################################################################################
+# Licensed to the .NET Foundation under one or more agreements.                 #
+# The .NET Foundation licenses this file to you under the MIT license.          #
+# See the LICENSE file in the project root for more information.                #
+#################################################################################
+parameters:
+  - name: poolName
+    type: string
+    default: ADO-1ES-Pool
+
+  - name: imageOverride
+    type: string
+    default: ADO-MMS22-SQL19
+
+jobs:
+- job: build_nugets
+
+  pool:
+    name: ADO-1ES-Pool
+    demands:
+    - imageOverride -equals ${{ parameters.imageOverride }}
+    - msbuild
+
+  variables:
+    - template: ../../../libraries/build-ci-variables.yml
+
+  steps:
+  - task: MSBuild@1
+    displayName: 'Restore nugets'
+    inputs:
+      solution: build.proj
+      msbuildArchitecture: x64
+      msbuildArguments: '-t:restore'
+
+  - task: MSBuild@1
+    displayName: 'Build Driver'
+    inputs:
+      solution: build.proj
+      msbuildArchitecture: x64
+      platform: '$(Platform)'
+      configuration: '$(Configuration)'
+      msbuildArguments: '-t:BuildAllConfigurations -p:GenerateNuGet=false -p:BuildNumber=$(BuildNumber)'
+      clean: true
+    retryCountOnTaskFailure: 1
+
+  - task: MSBuild@1
+    displayName: 'Build AKV Provider NetFx'
+    inputs:
+      solution: build.proj
+      msbuildArchitecture: x64
+      platform: '$(Platform)'
+      configuration: '$(Configuration)'
+      msbuildArguments: '-t:BuildAKVNetFx -p:BuildNumber=$(BuildNumber)'
+
+  - task: MSBuild@1
+    displayName: 'Build AKV Provider NetCore All OS'
+    inputs:
+      solution: build.proj
+      msbuildArchitecture: x64
+      platform: '$(Platform)'
+      configuration: '$(Configuration)'
+      msbuildArguments: '-t:BuildAKVNetCoreAllOS -p:BuildNumber=$(BuildNumber)'
+
+  - task: NuGetToolInstaller@1
+    displayName: 'Use NuGet '
+    inputs:
+      checkLatest: true
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet pack Microsoft.Data.SqlClient'
+    inputs:
+      command: pack
+      packagesToPack: tools/specs/Microsoft.Data.SqlClient.nuspec
+      configuration: '$(Configuration)'
+      versioningScheme: byEnvVar
+      versionEnvVar: NugetPackageVersion
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet pack AKV Provider'
+    inputs:
+      command: custom
+      versioningScheme: byEnvVar
+      versionEnvVar: NugetPackageVersion
+      buildProperties: 'ReferenceType=Project'
+      arguments: 'pack -Symbols -SymbolPackageFormat snupkg $(Build.SourcesDirectory)/tools/specs/add-ons/Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.nuspec -Version $(NugetPackageVersion) -OutputDirectory $(Build.ArtifactStagingDirectory) -properties "Configuration=$(Configuration);ReferenceType=Project"'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Artifacts'
+    inputs:
+      ArtifactName: Artifacts

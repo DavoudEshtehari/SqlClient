@@ -1,0 +1,46 @@
+#################################################################################
+# Licensed to the .NET Foundation under one or more agreements.                 #
+# The .NET Foundation licenses this file to you under the MIT license.          #
+# See the LICENSE file in the project root for more information.                #
+#################################################################################
+
+name: $(DayOfYear)$(Rev:rr)
+trigger: none
+  # branches:
+  #   include:
+  #   - internal/main
+  # paths:
+  #   include:
+  #   - src
+  #   - eng
+  #   - tools
+  #   - .config
+  #   - build.proj
+  #   - Nuget.config
+  #   - '*.cmd'
+  #   - '*.sh'
+
+# schedules:
+# - cron: '30 4 * * Mon'
+#   displayName: Weekly Sunday 9:30 PM (UTC - 7) Build
+#   branches:
+#     include:
+#     - internal/main
+#   always: true
+
+# - cron: '30 3 * * Mon-Fri'
+#   displayName: Mon-Fri 8:30 PM (UTC - 7) Build
+#   branches:
+#     include:
+#     - internal/main
+
+parameters: # parameters are shown up in ADO UI in a build queue time
+- name: 'debug'
+  displayName: 'Enable debug output'
+  type: boolean
+  default: true
+
+stages:
+- stage: buildAKV
+  jobs:
+  - template: common/templates/jobs/build-nugets-ci-job.yml
