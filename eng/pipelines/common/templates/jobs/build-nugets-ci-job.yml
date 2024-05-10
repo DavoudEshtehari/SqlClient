@@ -24,7 +24,7 @@ jobs:
 - job: build_nugets
 
   pool:
-    name: ADO-1ES-Pool
+    name: ${{parameters.poolName }}
     demands:
     - imageOverride -equals ${{ parameters.imageOverride }}
     - msbuild
@@ -34,7 +34,7 @@ jobs:
 
   steps:
   - ${{ if ne(parameters.prebuildSteps, '') }}:
-    - ${{ parameters.prebuildSteps }}
+    - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
   - task: MSBuild@1
     displayName: 'Restore nugets'
