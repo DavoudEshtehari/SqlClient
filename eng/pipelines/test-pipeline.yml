@@ -11,14 +11,14 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 - name: 'debug'
   displayName: 'Enable debug output'
   type: boolean
-  default: true
+  default: false
 
 - name: configProperties
   type: object
   default:
-    - TCPConnectionString: $(SQL_TCP_CONN_STRING)
-    - NPConnectionString: $(SQL_NP_CONN_STRING)
-    - AADAuthorityURL: $(AADAuthorityURL)
+    TCPConnectionString: $(SQL_TCP_CONN_STRING)
+    NPConnectionString: $(SQL_NP_CONN_STRING)
+    AADAuthorityURL: $(AADAuthorityURL)
 
 variables:
   # - template: libraries/ci-configuration-variables.yml
