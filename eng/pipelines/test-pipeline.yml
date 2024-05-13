@@ -24,6 +24,30 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: object
   default: [1, 2, 3]
 
+- name: testCfgs
+  type: object
+  default:
+    - windows-sql:
+        pool: ADO-1ES-Pool
+        versions:
+          Windows2019:
+            image: ADO-MMS22-SQL19
+            name: Windows2019
+            sqlServer: SQL19
+          Windows2022:
+            image: ADO-MMS22-SQL22
+            name: Windows2022
+            sqlServer: SQL22
+        TargetFrameworks: [net462, net6.0, net8.0]
+        TFwithManagedSNI: [net6.0, net8.0]
+        buildPlatforms: [AnyCPU]
+        testPlatforms: [AnyCPU, x86]
+        testSets: [1, 2, 3]
+        connectionStrings:
+          TCPConnectionString: $(SQL_TCP_CONN_STRING)
+          NPConnectionString: $(SQL_NP_CONN_STRING)
+          AADAuthorityURL: $(AADAuthorityURL)
+
 variables:
   # - template: libraries/ci-configuration-variables.yml
   - name: artifactName
@@ -41,6 +65,28 @@ stages:
     - script: SET
       displayName: 'Print Environment Variables'
 
+    - ${{ each cfg in parameters.testCfgs }}:
+      - script: | 
+          echo '${{ cfg.key }}'
+          echo '${{ cfg.pool }}'
+        displayName: 'Print testCfgs items ${{ cfg.key }}'
+
+      - ${{ each version in cfg.versions }}:
+        - script: |
+            echo 'version: ${{ version }}'
+            echo 'image: ${{ version.image }}'
+            echo 'name: ${{ version.name }}'
+            echo 'sqlServer: ${{ version.sqlServer }}'
+          displayName: 'Print versions items ${{ version.key }}'
+
+      - ${{ each item in cfg.TargetFrameworks }}:
+        - script: echo '${{ item }}'
+          displayName: 'Print TargetFrameworks items ${{ item }}'
+
+      - ${{ each item in cfg.connectionStrings }}:
+        - script: echo '${{ item.value }}'
+          displayName: 'Print connectionStrings items ${{ item.key }}'
+    
     - ${{ each item in parameters.testArray }}:
       - script: echo '${{ item }}'
         displayName: 'Print testArray items ${{ item }}'
