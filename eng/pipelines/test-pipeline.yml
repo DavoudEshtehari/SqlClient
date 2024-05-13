@@ -20,6 +20,10 @@ parameters: # parameters are shown up in ADO UI in a build queue time
     NPConnectionString: $(SQL_NP_CONN_STRING)
     AADAuthorityURL: $(AADAuthorityURL)
 
+- name: testArray
+  type: object
+  default: [1, 2, 3]
+
 variables:
   # - template: libraries/ci-configuration-variables.yml
   - name: artifactName
@@ -37,6 +41,10 @@ stages:
     - script: SET
       displayName: 'Print Environment Variables'
 
+    - ${{ each item in parameters.testArray }}:
+      - script: echo '${{ item }}'
+        displayName: 'Print testArray items ${{ item }}'
+    
     - ${{ each pair in parameters.configProperties }}:
       - script: echo '${{ pair.value }}'
         displayName: 'Print Config Properties ${{ pair.key }}'
