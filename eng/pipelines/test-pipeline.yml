@@ -15,14 +15,14 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 
 - name: configProperties
   type: object
-  default:
-    TCPConnectionString: $(SQL_TCP_CONN_STRING)
-    NPConnectionString: $(SQL_NP_CONN_STRING)
-    AADAuthorityURL: $(AADAuthorityURL)
+  default: {}
+  #   TCPConnectionString: $(SQL_TCP_CONN_STRING)
+  #   NPConnectionString: $(SQL_NP_CONN_STRING)
+  #   AADAuthorityURL: $(AADAuthorityURL)
 
 - name: testArray
   type: object
-  default: [1, 2, 3]
+  default: [] #[1, 2, 3]
 
 - name: testCfgs
   type: object
