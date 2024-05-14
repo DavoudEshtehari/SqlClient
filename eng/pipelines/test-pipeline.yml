@@ -68,10 +68,10 @@ stages:
     - ${{ each cfg in parameters.testCfgs }}:
       - script: | 
           echo '${{ cfg.key }}'
-          echo '${{ cfg.pool }}'
+          echo '${{ cfg.value.pool }}'
         displayName: 'Print testCfgs items ${{ cfg.key }}'
 
-      - ${{ each version in cfg.versions }}:
+      - ${{ each version in cfg.value.versions }}:
         - script: |
             echo 'version: ${{ version }}'
             echo 'image: ${{ version.image }}'
