@@ -74,12 +74,9 @@ stages:
 # -------------Version--------------------------------------------------------------
       - ${{ each version in cfg.value.versions }}:
         - script: |
-            echo 'image: ${{ version.value.image.value }}'
-            echo ${{ version.value.image.key }}
-            echo ${{ version.value.image.value }}
-            echo ${{ version.value.image }}
-            echo 'name: ${{ version.value.name.value }}'
-            echo 'sqlServer: ${{ version.value.sqlServer.value }}'
+            echo 'image: ${{ version.value.image }}'
+            echo 'name: ${{ version.value.name }}'
+            echo 'sqlServer: ${{ version.value.sqlServer }}'
           displayName: 'Print versions items ${{ version.key }}'
 # --------------TF-------------------------------------------------------------
       - ${{ each item in cfg.value.TargetFrameworks }}:
