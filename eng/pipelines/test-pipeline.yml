@@ -75,6 +75,9 @@ stages:
       - ${{ each version in cfg.value.versions }}:
         - script: |
             echo 'image: ${{ version.value.image.value }}'
+            echo ${{ version.value.image.key }}
+            echo ${{ version.value.image.value }}
+            echo ${{ version.value.image }}
             echo 'name: ${{ version.value.name.value }}'
             echo 'sqlServer: ${{ version.value.sqlServer.value }}'
           displayName: 'Print versions items ${{ version.key }}'
