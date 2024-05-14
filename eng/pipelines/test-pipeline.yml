@@ -56,14 +56,14 @@ extends:
   parameters:
     # dependsOn: 'build'
     prebuildSteps:
-      - task: DownloadSecureFile@1
+      - task: DownloadPipelineArtifact@2
         displayName: 'Download NuGet Package'
         inputs:
           buildType: specific
           project: 'ADO.Net'
           definition: 1825 
           artifact: $(artifactName)
-          patterns: '*.nupkg'
+          patterns: '**/*.nupkg'
           targetPath: $(Pipeline.Workspace)/$(artifactName)
 
     testConfigurations:
