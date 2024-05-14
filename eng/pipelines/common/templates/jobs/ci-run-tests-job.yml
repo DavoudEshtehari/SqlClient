@@ -9,14 +9,11 @@ parameters:
     default: ADO-1ES-Pool
 
   - name: imageOverride
-    type: object
+    type: string
+    default: ADO-MMS22-SQL19
 
   - name: jobDisplayName
     type: string
-
-  - name: artifactName
-    type: string
-    default: Artifacts
 
   - name: configProperties
     type: object
@@ -26,20 +23,19 @@ parameters:
     type: stepList
     default: []
 
+  - name: artifactName
+    type: string
+    default: Artifacts
+
 jobs:
-- job: ${{ format('build_runTests_{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, '-')) }}
+- job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, 'unknown_image')) }}
 
   pool:
     name: ${{parameters.poolName }}
     demands:
     - imageOverride -equals ${{ parameters.imageOverride }}
 
-  variables:
-    - template: ../../../libraries/build-ci-variables.yml
-
   steps:
     - ${{ if ne(parameters.prebuildSteps, '') }}:
       - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
-    - ${{ each pair in parameters.configProperties }}:
-      - script: echo 'Key[${{ pair.key }}] - Value[${{ pair.value }}]'

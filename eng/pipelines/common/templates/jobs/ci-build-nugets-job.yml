@@ -30,7 +30,7 @@ jobs:
     - msbuild
 
   variables:
-    - template: ../../../libraries/build-ci-variables.yml
+    - template: ../../../libraries/ci-build-variables.yml
 
   steps:
   - ${{ if ne(parameters.prebuildSteps, '') }}:

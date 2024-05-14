@@ -24,67 +24,102 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: object
   default: [] #[1, 2, 3]
 
-- name: testCfgs
-  type: object
-  default:
-    windows-sql:
-      pool: ADO-1ES-Pool
-      images:
-          Windows22-Sql19: ADO-MMS22-SQL19
-          Windows22-Sql22: ADO-MMS22-SQL22
-      targetFrameworks: [net462, net6.0, net8.0]
-      targetFrameworks-ManagedSNI: [net6.0, net8.0]
-      buildPlatforms: [AnyCPU]
-      testPlatforms: [AnyCPU, x86]
-      testSets: [1, 2, 3]
-      connectionStrings:
-        TCPConnectionString: $(SQL_TCP_CONN_STRING)
-        NPConnectionString: $(SQL_NP_CONN_STRING)
-        AADAuthorityURL: $(AADAuthorityURL)
+# - name: testCfgs
+#   type: object
+#   default:
+#     windows-sql:
+#       pool: ADO-1ES-Pool
+#       images:
+#           Windows22-Sql19: ADO-MMS22-SQL19
+#           Windows22-Sql22: ADO-MMS22-SQL22
+#       targetFrameworks: [net462, net6.0, net8.0]
+#       targetFrameworks-ManagedSNI: [net6.0, net8.0]
+#       buildPlatforms: [AnyCPU]
+#       testPlatforms: [AnyCPU, x86]
+#       testSets: [1, 2, 3]
+#       connectionStrings:
+#         TCPConnectionString: $(SQL_TCP_CONN_STRING)
+#         NPConnectionString: $(SQL_NP_CONN_STRING)
+#         AADAuthorityURL: $(AADAuthorityURL)
 
 variables:
-  # - template: libraries/ci-configuration-variables.yml
+  - template: libraries/ci-build-variables.yml
+
   - name: artifactName
     value: Artifacts
 
-stages:
-- stage: test1
-  jobs:
+  - name: defaultPoolName
+    value: 'Azure Pipelines'
 
-  - job: job1
-    pool: 
-      vmImage: 'windows-latest'
+extends:
+  template: common/templates/stages/ci-run-tests-stage.yml
+  parameters:
+    # dependsOn: 'build'
+    prebuildSteps:
+      - task: DownloadSecureFile@1
+        displayName: 'Download NuGet Package'
+        inputs:
+          buildType: specific
+          project: 'ADO.Net'
+          definition: 1825 
+          artifact: $(artifactName)
+          patterns: '*.nupkg'
+          targetPath: $(Pipeline.Workspace)/$(artifactName)
 
-    steps:
-    - script: SET
-      displayName: 'Print Environment Variables'
+    testConfigurations:
+      windows_sql:
+        pool: $(defaultPoolName)
+        images:
+          Windows22_Sql19: windows-latest
+          Windows22_Sql22: windows-latest
+        TargetFrameworks: [net462, net6.0, net8.0]
+        TFwithManagedSNI: [net6.0, net8.0]
+        buildPlatforms: [AnyCPU]
+        testPlatforms: [AnyCPU, x86]
+        testSets: [1, 2, 3]
+        connectionStrings:
+          TCPConnectionString: $(SQL_TCP_CONN_STRING)
+          NPConnectionString: $(SQL_NP_CONN_STRING)
+          AADAuthorityURL: $(AADAuthorityURL)
 
-# -------------Config--------------------------------------------------------------
-    - ${{ each cfg in parameters.testCfgs }}:
-      - script: | 
-          echo '${{ cfg.key }}'
-          echo '${{ cfg.value.pool }}'
-        displayName: 'Print testCfgs items ${{ cfg.key }}'
-# -------------Version--------------------------------------------------------------
-      - ${{ each image in cfg.value.images }}:
-        - script: |
-            echo 'image: ${{ image.value }}'
-            echo 'name: ${{ image.key }}'
-          displayName: 'Print versions items ${{ image.key }}'
-# --------------TF-------------------------------------------------------------
-      - ${{ each item in cfg.value.targetFrameworks }}:
-        - script: echo '${{ item }}'
-          displayName: 'Print TargetFrameworks items ${{ item }}'
-# --------------Cnn String------------------------------------------------------------
-      - ${{ each item in cfg.value.connectionStrings }}:
-        - script: echo '${{ item.value }}'
-          displayName: 'Print connectionStrings items ${{ item.key }}'
-# ---------------------------------------------------------------------------
+# stages:
+# - stage: test1
+#   jobs:
+
+#   - job: job1
+#     pool: 
+#       vmImage: 'windows-latest'
+
+#     steps:
+#     - script: SET
+#       displayName: 'Print Environment Variables'
+
+# # -------------Config--------------------------------------------------------------
+#     - ${{ each cfg in parameters.testCfgs }}:
+#       - script: | 
+#           echo '${{ cfg.key }}'
+#           echo '${{ cfg.value.pool }}'
+#         displayName: 'Print testCfgs items ${{ cfg.key }}'
+# # -------------Version--------------------------------------------------------------
+#       - ${{ each image in cfg.value.images }}:
+#         - script: |
+#             echo 'image: ${{ image.value }}'
+#             echo 'name: ${{ image.key }}'
+#           displayName: 'Print versions items ${{ image.key }}'
+# # --------------TF-------------------------------------------------------------
+#       - ${{ each item in cfg.value.targetFrameworks }}:
+#         - script: echo '${{ item }}'
+#           displayName: 'Print TargetFrameworks items ${{ item }}'
+# # --------------Cnn String------------------------------------------------------------
+#       - ${{ each item in cfg.value.connectionStrings }}:
+#         - script: echo '${{ item.value }}'
+#           displayName: 'Print connectionStrings items ${{ item.key }}'
+# # ---------------------------------------------------------------------------
     
-    - ${{ each item in parameters.testArray }}:
-      - script: echo '${{ item }}'
-        displayName: 'Print testArray items ${{ item }}'
+#     - ${{ each item in parameters.testArray }}:
+#       - script: echo '${{ item }}'
+#         displayName: 'Print testArray items ${{ item }}'
     
-    - ${{ each pair in parameters.configProperties }}:
-      - script: echo '${{ pair.value }}'
-        displayName: 'Print Config Properties ${{ pair.key }}'
+#     - ${{ each pair in parameters.configProperties }}:
+#       - script: echo '${{ pair.value }}'
+#         displayName: 'Print Config Properties ${{ pair.key }}'
