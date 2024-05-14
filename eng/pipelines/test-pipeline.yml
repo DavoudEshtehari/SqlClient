@@ -27,26 +27,26 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 - name: testCfgs
   type: object
   default:
-    - windows-sql:
-        pool: ADO-1ES-Pool
-        versions:
-          Windows2019:
-            image: ADO-MMS22-SQL19
-            name: Windows2019
-            sqlServer: SQL19
-          Windows2022:
-            image: ADO-MMS22-SQL22
-            name: Windows2022
-            sqlServer: SQL22
-        TargetFrameworks: [net462, net6.0, net8.0]
-        TFwithManagedSNI: [net6.0, net8.0]
-        buildPlatforms: [AnyCPU]
-        testPlatforms: [AnyCPU, x86]
-        testSets: [1, 2, 3]
-        connectionStrings:
-          TCPConnectionString: $(SQL_TCP_CONN_STRING)
-          NPConnectionString: $(SQL_NP_CONN_STRING)
-          AADAuthorityURL: $(AADAuthorityURL)
+    windows-sql:
+      pool: ADO-1ES-Pool
+      versions:
+        Windows2019:
+          image: ADO-MMS22-SQL19
+          name: Windows2019
+          sqlServer: SQL19
+        Windows2022:
+          image: ADO-MMS22-SQL22
+          name: Windows2022
+          sqlServer: SQL22
+      TargetFrameworks: [net462, net6.0, net8.0]
+      TFwithManagedSNI: [net6.0, net8.0]
+      buildPlatforms: [AnyCPU]
+      testPlatforms: [AnyCPU, x86]
+      testSets: [1, 2, 3]
+      connectionStrings:
+        TCPConnectionString: $(SQL_TCP_CONN_STRING)
+        NPConnectionString: $(SQL_NP_CONN_STRING)
+        AADAuthorityURL: $(AADAuthorityURL)
 
 variables:
   # - template: libraries/ci-configuration-variables.yml
@@ -73,12 +73,11 @@ stages:
         displayName: 'Print testCfgs items ${{ cfg.key }}'
 # -------------Version--------------------------------------------------------------
       - ${{ each version in cfg.value.versions }}:
-        - ${{ each osCfg in version.value }}:
-          - script: |
-              echo 'image: ${{ osCfg.image }}'
-              echo 'name: ${{ osCfg.name }}'
-              echo 'sqlServer: ${{ osCfg.sqlServer }}'
-            displayName: 'Print versions items ${{ version.key }}'
+        - script: |
+            echo 'image: ${{ version.value.image.value }}'
+            echo 'name: ${{ version.value.name.value }}'
+            echo 'sqlServer: ${{ version.value.sqlServer.value }}'
+          displayName: 'Print versions items ${{ version.key }}'
 # --------------TF-------------------------------------------------------------
       - ${{ each item in cfg.value.TargetFrameworks }}:
         - script: echo '${{ item }}'
