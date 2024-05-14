@@ -65,27 +65,29 @@ stages:
     - script: SET
       displayName: 'Print Environment Variables'
 
+# -------------Config--------------------------------------------------------------
     - ${{ each cfg in parameters.testCfgs }}:
       - script: | 
           echo '${{ cfg.key }}'
           echo '${{ cfg.value.pool }}'
         displayName: 'Print testCfgs items ${{ cfg.key }}'
-
+# -------------Version--------------------------------------------------------------
       - ${{ each version in cfg.value.versions }}:
-        - script: |
-            echo 'version: ${{ version }}'
-            echo 'image: ${{ version.image }}'
-            echo 'name: ${{ version.name }}'
-            echo 'sqlServer: ${{ version.sqlServer }}'
-          displayName: 'Print versions items ${{ version.key }}'
-
-      - ${{ each item in cfg.TargetFrameworks }}:
+        - ${{ each osCfg in version.value }}:
+          - script: |
+              echo 'image: ${{ osCfg.image }}'
+              echo 'name: ${{ osCfg.name }}'
+              echo 'sqlServer: ${{ osCfg.sqlServer }}'
+            displayName: 'Print versions items ${{ version.key }}'
+# --------------TF-------------------------------------------------------------
+      - ${{ each item in cfg.value.TargetFrameworks }}:
         - script: echo '${{ item }}'
           displayName: 'Print TargetFrameworks items ${{ item }}'
-
-      - ${{ each item in cfg.connectionStrings }}:
+# --------------Cnn String------------------------------------------------------------
+      - ${{ each item in cfg.value.connectionStrings }}:
         - script: echo '${{ item.value }}'
           displayName: 'Print connectionStrings items ${{ item.key }}'
+# ---------------------------------------------------------------------------
     
     - ${{ each item in parameters.testArray }}:
       - script: echo '${{ item }}'
