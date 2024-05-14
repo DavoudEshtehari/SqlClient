@@ -29,17 +29,11 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   default:
     windows-sql:
       pool: ADO-1ES-Pool
-      versions:
-        Windows2019:
-          image: ADO-MMS22-SQL19
-          name: Windows2019
-          sqlServer: SQL19
-        Windows2022:
-          image: ADO-MMS22-SQL22
-          name: Windows2022
-          sqlServer: SQL22
-      TargetFrameworks: [net462, net6.0, net8.0]
-      TFwithManagedSNI: [net6.0, net8.0]
+      images:
+          Windows22-Sql19: ADO-MMS22-SQL19
+          Windows22-Sql22: ADO-MMS22-SQL22
+      targetFrameworks: [net462, net6.0, net8.0]
+      targetFrameworks-ManagedSNI: [net6.0, net8.0]
       buildPlatforms: [AnyCPU]
       testPlatforms: [AnyCPU, x86]
       testSets: [1, 2, 3]
@@ -72,14 +66,13 @@ stages:
           echo '${{ cfg.value.pool }}'
         displayName: 'Print testCfgs items ${{ cfg.key }}'
 # -------------Version--------------------------------------------------------------
-      - ${{ each version in cfg.value.versions }}:
+      - ${{ each image in cfg.value.images }}:
         - script: |
-            echo 'image: ${{ version.value.image }}'
-            echo 'name: ${{ version.value.name }}'
-            echo 'sqlServer: ${{ version.value.sqlServer }}'
-          displayName: 'Print versions items ${{ version.key }}'
+            echo 'image: ${{ image.value }}'
+            echo 'name: ${{ image.key }}'
+          displayName: 'Print versions items ${{ image.key }}'
 # --------------TF-------------------------------------------------------------
-      - ${{ each item in cfg.value.TargetFrameworks }}:
+      - ${{ each item in cfg.value.targetFrameworks }}:
         - script: echo '${{ item }}'
           displayName: 'Print TargetFrameworks items ${{ item }}'
 # --------------Cnn String------------------------------------------------------------
