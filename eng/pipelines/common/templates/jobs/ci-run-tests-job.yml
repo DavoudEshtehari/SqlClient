@@ -30,10 +30,11 @@ parameters:
 jobs:
 - job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, 'unknown_image')) }}
 
-  pool:
-    name: ${{parameters.poolName }}
-    demands:
-    - imageOverride -equals ${{ parameters.imageOverride }}
+  pool: 
+    vmImage: ${{ parameters.imageOverride }} # <<<<< temporary for testing >>>>>
+    # name: ${{parameters.poolName }}
+    # demands:
+    # - imageOverride -equals ${{ parameters.imageOverride }}
 
   steps:
     - ${{ if ne(parameters.prebuildSteps, '') }}:
