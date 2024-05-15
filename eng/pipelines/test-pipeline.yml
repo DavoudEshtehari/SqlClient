@@ -99,10 +99,7 @@ stages:
 
     - script: |
         echo '${{parameters.configProperties.propertyName }}'
-        echo '${{parameters.configProperties["TCPConnectionString"] }}'
         echo '${{parameters.configProperties.value }}'
-        echo '${{parameters.configProperties.value.TCPConnectionString }}'
-        echo '${{parameters.configProperties.value["TCPConnectionString"] }}'
         echo '${{parameters.configProperties.value.propertyName }}'
       displayName: 'Print configProperties'
 
