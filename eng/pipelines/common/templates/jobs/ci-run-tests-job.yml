@@ -44,12 +44,6 @@ jobs:
     - ${{ if ne(parameters.prebuildSteps, '') }}:
       - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
-    - pwsh: |
-        Write-Host "configProperties['TCPConnectionString']: ${{ parameters.configProperties['TCPConnectionString'] }}"
-        Write-Host "configProperties['NPConnectionString']: ${{ parameters.configProperties['NPConnectionString'] }}"
-        Write-Host "configProperties['AADAuthorityURL']: ${{ parameters.configProperties['AADAuthorityURL'] }}"
-      displayName: 'Print configProperties'
-
     - ${{ if ne(parameters.configProperties, '{}') }}:
       - template: ../steps/update-config-file-step.yml
         parameters:
