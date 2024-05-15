@@ -50,3 +50,5 @@ jobs:
               NPConnectionString: ${{ param.value }}
             ${{ elseif eq(param.key, 'TracingEnabled') }}:
               TracingEnabled: ${{ param.value }}
+            ${{ else }}:
+              AADAuthorityURL: ${{ param.value }}
