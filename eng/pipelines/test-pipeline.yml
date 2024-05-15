@@ -15,10 +15,10 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 
 - name: configProperties
   type: object
-  default: {}
-  #   TCPConnectionString: $(SQL_TCP_CONN_STRING)
-  #   NPConnectionString: $(SQL_NP_CONN_STRING)
-  #   AADAuthorityURL: $(AADAuthorityURL)
+  default: 
+    TCPConnectionString: $(SQL_TCP_CONN_STRING)
+    NPConnectionString: $(SQL_NP_CONN_STRING)
+    AADAuthorityURL: $(AADAuthorityURL)
 
 - name: testArray
   type: object
@@ -37,7 +37,7 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 #       buildPlatforms: [AnyCPU]
 #       testPlatforms: [AnyCPU, x86]
 #       testSets: [1, 2, 3]
-#       connectionStrings:
+#       configProperties:
 #         TCPConnectionString: $(SQL_TCP_CONN_STRING)
 #         NPConnectionString: $(SQL_NP_CONN_STRING)
 #         AADAuthorityURL: $(AADAuthorityURL)
@@ -51,51 +51,60 @@ variables:
   - name: defaultPoolName
     value: 'Azure Pipelines'
 
-extends:
-  template: common/templates/stages/ci-run-tests-stage.yml
-  parameters:
-    # dependsOn: 'build'
-    debug: ${{ parameters.debug }}
-    prebuildSteps:
-      - script: SET
-        displayName: 'Print Environment Variables'
-      - task: DownloadPipelineArtifact@2
-        displayName: 'Download NuGet Package'
-        inputs:
-          buildType: specific
-          project: 'ADO.Net'
-          definition: 1825 
-          artifact: $(artifactName)
-          patterns: '**/*.nupkg'
-          targetPath: $(Pipeline.Workspace)/$(artifactName)
+# extends:
+#   template: common/templates/stages/ci-run-tests-stage.yml
+#   parameters:
+#     # dependsOn: 'build'
+#     debug: ${{ parameters.debug }}
+#     prebuildSteps:
+#       - script: SET
+#         displayName: 'Print Environment Variables'
+#       - task: DownloadPipelineArtifact@2
+#         displayName: 'Download NuGet Package'
+#         inputs:
+#           buildType: specific
+#           project: 'ADO.Net'
+#           definition: 1825 
+#           artifact: $(artifactName)
+#           patterns: '**/*.nupkg'
+#           targetPath: $(Pipeline.Workspace)/$(artifactName)
 
-    testConfigurations:
-      windows_sql:
-        pool: $(defaultPoolName)
-        images:
-          Windows22_Sql19: windows-latest
-          Windows22_Sql22: windows-latest
-        TargetFrameworks: [net462, net6.0, net8.0]
-        TFwithManagedSNI: [net6.0, net8.0]
-        buildPlatforms: [AnyCPU]
-        testPlatforms: [AnyCPU, x86]
-        testSets: [1, 2, 3]
-        configProperties:
-          TCPConnectionString: '$(SQL_TCP_CONN_STRING)'
-          NPConnectionString: '$(SQL_NP_CONN_STRING)'
-          AADAuthorityURL: '$(AADAuthorityURL)'
+#     testConfigurations:
+#       windows_sql:
+#         pool: $(defaultPoolName)
+#         images:
+#           Windows22_Sql19: windows-latest
+#           Windows22_Sql22: windows-latest
+#         TargetFrameworks: [net462, net6.0, net8.0]
+#         TFwithManagedSNI: [net6.0, net8.0]
+#         buildPlatforms: [AnyCPU]
+#         testPlatforms: [AnyCPU, x86]
+#         testSets: [1, 2, 3]
+#         configProperties:
+#           TCPConnectionString: '$(SQL_TCP_CONN_STRING)'
+#           NPConnectionString: '$(SQL_NP_CONN_STRING)'
+#           AADAuthorityURL: '$(AADAuthorityURL)'
 
-# stages:
-# - stage: test1
-#   jobs:
+stages:
+- stage: test1
+  jobs:
 
-#   - job: job1
-#     pool: 
-#       vmImage: 'windows-latest'
+  - job: job1
+    pool: 
+      vmImage: 'windows-latest'
 
-#     steps:
-#     - script: SET
-#       displayName: 'Print Environment Variables'
+    steps:
+    - script: SET
+      displayName: 'Print Environment Variables'
+
+    - script: |
+        echo '${{parameters.configProperties.propertyName }}'
+        echo '${{parameters.configProperties["TCPConnectionString"] }}'
+        echo '${{parameters.configProperties.value }}'
+        echo '${{parameters.configProperties.value.TCPConnectionString }}'
+        echo '${{parameters.configProperties.value["TCPConnectionString"] }}'
+        echo '${{parameters.configProperties.value.propertyName }}'
+      displayName: 'Print configProperties'
 
 # # -------------Config--------------------------------------------------------------
 #     - ${{ each cfg in parameters.testCfgs }}:
@@ -114,9 +123,9 @@ extends:
 #         - script: echo '${{ item }}'
 #           displayName: 'Print TargetFrameworks items ${{ item }}'
 # # --------------Cnn String------------------------------------------------------------
-#       - ${{ each item in cfg.value.connectionStrings }}:
+#       - ${{ each item in cfg.value.configProperties }}:
 #         - script: echo '${{ item.value }}'
-#           displayName: 'Print connectionStrings items ${{ item.key }}'
+#           displayName: 'Print configProperties items ${{ item.key }}'
 # # ---------------------------------------------------------------------------
     
 #     - ${{ each item in parameters.testArray }}:
