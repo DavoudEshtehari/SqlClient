@@ -44,11 +44,22 @@ jobs:
     - ${{ if ne(parameters.prebuildSteps, '') }}:
       - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
+    - pwsh: |
+        Write-Host "propertyName: ${{ parameters.configProperties.propertyName}}"
+        Write-Host "configProperties: ${{ parameters.configProperties }}"
+        Write-Host "configProperties['TCPConnectionString']: ${{ parameters.configProperties['TCPConnectionString'] }}"
+        Write-Host "configProperties['NPConnectionString']: ${{ parameters.configProperties['NPConnectionString'] }}"
+        Write-Host "configProperties['AADAuthorityURL']: ${{ parameters.configProperties['AADAuthorityURL'] }}"
+        Write-Host "configProperties['AADClientId']: ${{ parameters.configProperties['AADClientId'] }}"
+        Write-Host "configProperties['AADClientSecret']: ${{ parameters.configProperties['AADClientSecret'] }}"
+        Write-Host "configProperties['AADTenantId']: ${{ parameters.configProperties['AADTenantId'] }}"
+      displayName: 'Print configProperties'
+
     - ${{ if ne(parameters.configProperties, '{}') }}:
       - template: ../steps/update-config-file-step.yml
         parameters:
           debug: ${{ parameters.debug }}
-          ${{ if ne(parameters.configProperties['TCPConnectionString'], '') }}:
+          ${{ if eq(parameters.configProperties.propertyName, 'TCPConnectionString') }}:
             TCPConnectionString: ${{ parameters.configProperties['TCPConnectionString'].value }}
           ${{ if ne(parameters.configProperties['NPConnectionString'], '') }}:
             NPConnectionString: ${{ parameters.configProperties['NPConnectionString'].value }}
