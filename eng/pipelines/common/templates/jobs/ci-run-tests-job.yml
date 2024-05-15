@@ -45,14 +45,9 @@ jobs:
       - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
     - pwsh: |
-        Write-Host "propertyName: ${{ parameters.configProperties.propertyName}}"
-        Write-Host "configProperties: ${{ parameters.configProperties }}"
         Write-Host "configProperties['TCPConnectionString']: ${{ parameters.configProperties['TCPConnectionString'] }}"
         Write-Host "configProperties['NPConnectionString']: ${{ parameters.configProperties['NPConnectionString'] }}"
         Write-Host "configProperties['AADAuthorityURL']: ${{ parameters.configProperties['AADAuthorityURL'] }}"
-        Write-Host "configProperties['AADClientId']: ${{ parameters.configProperties['AADClientId'] }}"
-        Write-Host "configProperties['AADClientSecret']: ${{ parameters.configProperties['AADClientSecret'] }}"
-        Write-Host "configProperties['AADTenantId']: ${{ parameters.configProperties['AADTenantId'] }}"
       displayName: 'Print configProperties'
 
     - ${{ if ne(parameters.configProperties, '{}') }}:
