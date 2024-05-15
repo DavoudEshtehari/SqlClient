@@ -103,6 +103,8 @@ stages:
       - script: echo "NPConnectionString is set to ${{ parameters.configProperties.NPConnectionString }}"
     - ${{ if parameters.configProperties.AADAuthorityURL }}:
       - script: echo "AADAuthorityURL is set to ${{ parameters.configProperties.AADAuthorityURL }}"
+    - ${{ if parameters.configProperties.AADAuthorityURL22222 }}:
+      - script: echo "AADAuthorityURL is set to ${{ parameters.configProperties.AADAuthorityURL22222 }}"
 
     - script: |
         echo '${{parameters.configProperties.propertyName }}'
