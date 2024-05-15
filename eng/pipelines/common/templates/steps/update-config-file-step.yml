@@ -11,8 +11,116 @@ parameters:
   - name: NPConnectionString
     type: string
     default: ''
+
+  - name: TCPConnectionStringHGSVBS
+    type: string
+    default: ''
+
+  - name: TCPConnectionStringAASVBS
+    type: string
+    default: ''
+
+  - name: TCPConnectionStringNoneVBS
+    type: string
+    default: ''
+
+  - name: TCPConnectionStringAASSGX
+    type: string
+    default: ''
+
+  - name: EnclaveEnabled
+    type: boolean
+    default: false
+
+  - name: TracingEnabled
+    type: boolean
+    default: false
+    
+  - name: AADAuthorityURL
+    type: string
+    default: ''
   
+  - name: AADPasswordConnectionString
+    type: string
+    default: ''
+
+  - name: AADServicePrincipalId
+    type: string
+    default: ''
+
+  - name: AADServicePrincipalSecret
+    type: string
+    default: ''
+
+  - name: AzureKeyVaultUrl
+    type: string
+    default: ''
+
+  - name: AzureKeyVaultTenantId
+    type: string
+    default: ''
+
+  - name: UseManagedSNIOnWindows
+    type: boolean
+    default: false
+
+  - name: UserManagedIdentityClientId
+    type: string
+    default: ''
+
+  - name: FileStreamDirectory
+    type: string
+    default: ''
+
+  - name: LocalDbAppName 
+    type: string
+    default: ''
+
+  - name: LocalDbSharedInstanceName 
+    type: string
+    default: ''
+
+  - name: AliasName 
+    type: string
+    default: ''
+
   - name: SupportsIntegratedSecurity
+    type: boolean
+    default: false
+
+  - name: SupportsFileStream
+    type: boolean
+    default: false
+
+  - name: DNSCachingConnString 
+    type: string
+    default: ''
+
+  - name: DNSCachingServerCR 
+    type: string
+    default: ''
+
+  - name: DNSCachingServerTR 
+    type: string
+    default: ''
+
+  - name: EnclaveAzureDatabaseConnString 
+    type: string
+    default: ''
+
+  - name: IsDNSCachingSupportedCR
+    type: boolean
+    default: false
+
+  - name: IsDNSCachingSupportedTR
+    type: boolean
+    default: false
+
+  - name: IsAzureSynapse
+    type: boolean
+    default: false
+
+  - name: ManagedIdentitySupported
     type: boolean
     default: false
 
@@ -28,7 +136,74 @@ steps:
         if ("${{parameters.NPConnectionString }}" -ne ""){
           $p.NPConnectionString="${{parameters.NPConnectionString }}"}
 
+        if ("${{parameters.AADAuthorityURL }}" -ne ""){
+          $p.AADAuthorityURL="${{parameters.AADAuthorityURL }}"}
+
+        if ("${{parameters.AADPasswordConnectionString }}" -ne ""){
+          $p.AADPasswordConnectionString="${{parameters.AADPasswordConnectionString }}"}
+
+        if ("${{parameters.AADServicePrincipalId }}" -ne ""){
+          $p.AADServicePrincipalId="${{parameters.AADServicePrincipalId }}"}
+
+        if ("${{parameters.AADServicePrincipalSecret }}" -ne ""){
+          $p.AADServicePrincipalSecret="${{parameters.AADServicePrincipalSecret }}"}
+
+        if ("${{parameters.AzureKeyVaultUrl }}" -ne ""){
+          $p.AzureKeyVaultUrl="${{parameters.AzureKeyVaultUrl }}"}
+
+        if ("${{parameters.AzureKeyVaultTenantId }}" -ne ""){
+          $p.AzureKeyVaultTenantId="${{parameters.AzureKeyVaultTenantId }}"}
+
+        if ("${{parameters.UserManagedIdentityClientId }}" -ne ""){
+          $p.UserManagedIdentityClientId="${{parameters.UserManagedIdentityClientId }}"}
+
+        if ("${{parameters.FileStreamDirectory }}" -ne ""){
+          $p.FileStreamDirectory="${{parameters.FileStreamDirectory }}"}
+
+        if ("${{parameters.LocalDbSharedInstanceName }}" -ne ""){
+          $p.LocalDbSharedInstanceName="${{parameters.LocalDbSharedInstanceName }}"}
+
+        if ("${{parameters.AliasName }}" -ne ""){
+          $p.AliasName="${{parameters.AliasName }}"}
+
+        if ("${{parameters.EnclaveAzureDatabaseConnString }}" -ne ""){
+          $p.EnclaveAzureDatabaseConnString="${{parameters.EnclaveAzureDatabaseConnString }}"}
+
+        if ("${{parameters.DNSCachingServerTR }}" -ne ""){
+          $p.DNSCachingServerTR="${{parameters.DNSCachingServerTR }}"}
+
+        if ("${{parameters.DNSCachingServerCR }}" -ne ""){
+          $p.DNSCachingServerCR="${{parameters.DNSCachingServerCR }}"}
+
+        if ("${{parameters.DNSCachingConnString }}" -ne ""){
+          $p.DNSCachingConnString="${{parameters.DNSCachingConnString }}"}
+
+        if ("${{parameters.SupportsFileStream }}" -ne ""){
+          $p.SupportsFileStream="${{parameters.SupportsFileStream }}"}
+
+        if ("${{parameters.LocalDbAppName }}" -ne ""){
+          $p.LocalDbAppName="${{parameters.LocalDbAppName }}"}
+
+        if ("${{parameters.TCPConnectionStringAASSGX }}" -ne ""){
+          $p.TCPConnectionStringAASSGX="${{parameters.TCPConnectionStringAASSGX }}"}
+
+        if ("${{parameters.TCPConnectionStringNoneVBS }}" -ne ""){
+          $p.TCPConnectionStringNoneVBS="${{parameters.TCPConnectionStringNoneVBS }}"}
+
+        if ("${{parameters.TCPConnectionStringAASVBS }}" -ne ""){
+          $p.TCPConnectionStringAASVBS="${{parameters.TCPConnectionStringAASVBS }}"}
+
+        if ("${{parameters.TCPConnectionStringHGSVBS }}" -ne ""){
+          $p.TCPConnectionStringHGSVBS="${{parameters.TCPConnectionStringHGSVBS }}"}
+
+        $p.UseManagedSNIOnWindows=[System.Convert]::ToBoolean("${{parameters.UseManagedSNIOnWindows }}")
         $p.SupportsIntegratedSecurity=[System.Convert]::ToBoolean("${{parameters.SupportsIntegratedSecurity }}")
+        $p.ManagedIdentitySupported=[System.Convert]::ToBoolean("${{parameters.ManagedIdentitySupported }}")
+        $p.IsAzureSynapse=[System.Convert]::ToBoolean("${{parameters.IsAzureSynapse }}")
+        $p.IsDNSCachingSupportedTR=[System.Convert]::ToBoolean("${{parameters.IsDNSCachingSupportedTR }}")
+        $p.IsDNSCachingSupportedCR=[System.Convert]::ToBoolean("${{parameters.IsDNSCachingSupportedCR }}")
+        $p.TracingEnabled=[System.Convert]::ToBoolean("${{parameters.TracingEnabled }}")
+        $p.EnclaveEnabled=[System.Convert]::ToBoolean("${{parameters.EnclaveEnabled }}")
     }
     $jdata | ConvertTo-Json | Set-Content "config.json"
   workingDirectory: src/Microsoft.Data.SqlClient/tests/tools/Microsoft.Data.SqlClient.TestUtilities

@@ -21,6 +21,8 @@ stages:
       - stage: ${{ image.key }}
         ${{ if ne(parameters.dependsOn, '') }}:
           dependsOn: ${{ parameters.dependsOn }}
+        ${{ else }}:
+          dependsOn: []
         jobs:
           # - ${{ if eq(config.type, 'Windows') }}:
         - ${{ each targetFramework in config.value.TargetFrameworks }}:

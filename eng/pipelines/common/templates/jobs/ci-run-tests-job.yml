@@ -17,7 +17,7 @@ parameters:
 
   - name: configProperties
     type: object
-    default: [] # - key: 'value'
+    default: {} # - key: 'value'
 
   - name: prebuildSteps
     type: stepList
@@ -39,4 +39,10 @@ jobs:
   steps:
     - ${{ if ne(parameters.prebuildSteps, '') }}:
       - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
+
+    - ${{ if ne(parameters.configProperties, '{}') }}:
+      - template: ../steps/update-config-file-step.yml
+        parameters:
+          ${{ each param in parameters.configProperties }}:
+            ${{ param.key }}: ${{ param.value }}
 
