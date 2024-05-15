@@ -40,9 +40,13 @@ jobs:
     - ${{ if ne(parameters.prebuildSteps, '') }}:
       - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
-    # - ${{ if ne(parameters.configProperties, '{}') }}:
-    - ${{ each param in parameters.configProperties }}:
+    - ${{ if ne(parameters.configProperties, '{}') }}:
       - template: ../steps/update-config-file-step.yml
         parameters:
-          ${{ param.key }}: ${{ param.value }}
-
+          ${{ each param in parameters.configProperties }}:
+            ${{ if eq(param.key, 'TCPConnectionString') }}:
+              TCPConnectionString: ${{ param.value }}
+            ${{ elseif eq(param.key, 'NPConnectionString') }}:
+              NPConnectionString: ${{ param.value }}
+            ${{ elseif eq(param.key, 'TracingEnabled') }}:
+              TracingEnabled: ${{ param.value }}
