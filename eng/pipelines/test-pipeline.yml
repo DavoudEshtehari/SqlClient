@@ -15,10 +15,10 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 
 - name: configProperties
   type: object
-  default: 
-    TCPConnectionString: $(SQL_TCP_CONN_STRING)
-    NPConnectionString: $(SQL_NP_CONN_STRING)
-    AADAuthorityURL: $(AADAuthorityURL)
+  default: {}
+    # TCPConnectionString: $(SQL_TCP_CONN_STRING)
+    # NPConnectionString: $(SQL_NP_CONN_STRING)
+    # AADAuthorityURL: $(AADAuthorityURL)
 
 - name: testArray
   type: object
@@ -51,66 +51,60 @@ variables:
   - name: defaultPoolName
     value: 'Azure Pipelines'
 
-# extends:
-#   template: common/templates/stages/ci-run-tests-stage.yml
-#   parameters:
-#     # dependsOn: 'build'
-#     debug: ${{ parameters.debug }}
-#     prebuildSteps:
-#       - script: SET
-#         displayName: 'Print Environment Variables'
-#       - task: DownloadPipelineArtifact@2
-#         displayName: 'Download NuGet Package'
-#         inputs:
-#           buildType: specific
-#           project: 'ADO.Net'
-#           definition: 1825 
-#           artifact: $(artifactName)
-#           patterns: '**/*.nupkg'
-#           targetPath: $(Pipeline.Workspace)/$(artifactName)
+extends:
+  template: common/templates/stages/ci-run-tests-stage.yml
+  parameters:
+    # dependsOn: 'build'
+    debug: ${{ parameters.debug }}
+    prebuildSteps:
+      - script: SET
+        displayName: 'Print Environment Variables'
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download NuGet Package'
+        inputs:
+          buildType: specific
+          project: 'ADO.Net'
+          definition: 1825 
+          artifact: $(artifactName)
+          patterns: '**/*.nupkg'
+          targetPath: $(Pipeline.Workspace)/$(artifactName)
 
-#     testConfigurations:
-#       windows_sql:
-#         pool: $(defaultPoolName)
-#         images:
-#           Windows22_Sql19: windows-latest
-#           Windows22_Sql22: windows-latest
-#         TargetFrameworks: [net462, net6.0, net8.0]
-#         TFwithManagedSNI: [net6.0, net8.0]
-#         buildPlatforms: [AnyCPU]
-#         testPlatforms: [AnyCPU, x86]
-#         testSets: [1, 2, 3]
-#         configProperties:
-#           TCPConnectionString: '$(SQL_TCP_CONN_STRING)'
-#           NPConnectionString: '$(SQL_NP_CONN_STRING)'
-#           AADAuthorityURL: '$(AADAuthorityURL)'
+    testConfigurations:
+      windows_sql:
+        pool: $(defaultPoolName)
+        images:
+          Windows22_Sql19: windows-latest
+          Windows22_Sql22: windows-latest
+        TargetFrameworks: [net462, net6.0, net8.0]
+        TFwithManagedSNI: [net6.0, net8.0]
+        buildPlatforms: [AnyCPU]
+        testPlatforms: [AnyCPU, x86]
+        testSets: [1, 2, 3]
+        configProperties:
+          TCPConnectionString: '$(SQL_TCP_CONN_STRING)'
+          NPConnectionString: '$(SQL_NP_CONN_STRING)'
+          AADAuthorityURL: '$(AADAuthorityURL)'
 
-stages:
-- stage: test1
-  jobs:
+# stages:
+# - stage: test1
+#   jobs:
 
-  - job: job1
-    pool: 
-      vmImage: 'windows-latest'
+#   - job: job1
+#     pool: 
+#       vmImage: 'windows-latest'
 
-    steps:
-    - script: SET
-      displayName: 'Print Environment Variables'
+#     steps:
+#     - script: SET
+#       displayName: 'Print Environment Variables'
 
-    - ${{ if parameters.configProperties.TCPConnectionString }}:
-      - script: echo "TCPConnectionString is set to ${{ parameters.configProperties.TCPConnectionString }}"
-    - ${{ if parameters.configProperties.NPConnectionString }}:
-      - script: echo "NPConnectionString is set to ${{ parameters.configProperties.NPConnectionString }}"
-    - ${{ if parameters.configProperties.AADAuthorityURL }}:
-      - script: echo "AADAuthorityURL is set to ${{ parameters.configProperties.AADAuthorityURL }}"
-    - ${{ if parameters.configProperties.AADAuthorityURL22222 }}:
-      - script: echo "AADAuthorityURL is set to ${{ parameters.configProperties.AADAuthorityURL22222 }}"
-
-    - script: |
-        echo '${{parameters.configProperties.propertyName }}'
-        echo '${{parameters.configProperties.value }}'
-        echo '${{parameters.configProperties.value.propertyName }}'
-      displayName: 'Print configProperties'
+#     - ${{ if parameters.configProperties.TCPConnectionString }}:
+#       - script: echo "TCPConnectionString is set to ${{ parameters.configProperties.TCPConnectionString }}"
+#     - ${{ if parameters.configProperties.NPConnectionString }}:
+#       - script: echo "NPConnectionString is set to ${{ parameters.configProperties.NPConnectionString }}"
+#     - ${{ if parameters.configProperties.AADAuthorityURL }}:
+#       - script: echo "AADAuthorityURL is set to ${{ parameters.configProperties.AADAuthorityURL }}"
+#     - ${{ if parameters.configProperties.AADAuthorityURL22222 }}:
+#       - script: echo "AADAuthorityURL is set to ${{ parameters.configProperties.AADAuthorityURL22222 }}"
 
 # # -------------Config--------------------------------------------------------------
 #     - ${{ each cfg in parameters.testCfgs }}:

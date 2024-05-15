@@ -54,9 +54,15 @@ jobs:
       - template: ../steps/update-config-file-step.yml
         parameters:
           debug: ${{ parameters.debug }}
-          TCPConnectionString: ${{ parameters.configProperties['TCPConnectionString'].value }}
-          NPConnectionString: ${{ parameters.configProperties['NPConnectionString'].value }}
-          AADAuthorityURL: ${{ parameters.configProperties['AADAuthorityURL'].value }}
-          AADClientId: ${{ parameters.configProperties['AADClientId'].value }}
-          AADClientSecret: ${{ parameters.configProperties['AADClientSecret'].value }}
-          AADTenantId: ${{ parameters.configProperties['AADTenantId'].value }}
+          ${{ if parameters.configProperties.TCPConnectionString }}:
+            TCPConnectionString: ${{ parameters.configProperties.TCPConnectionString }}
+          ${{ if parameters.configProperties.NPConnectionString }}:
+            NPConnectionString: ${{ parameters.configProperties.NPConnectionString }}
+          ${{ if parameters.configProperties.AADAuthorityURL }}:
+            AADAuthorityURL: ${{ parameters.configProperties.AADAuthorityURL }}
+          ${{ if parameters.configProperties.AADClientId }}:
+            AADClientId: ${{ parameters.configProperties.AADClientId }}
+          ${{ if parameters.configProperties.AADClientSecret }}:
+            AADClientSecret: ${{ parameters.configProperties.AADClientSecret }}
+          ${{ if parameters.configProperties.AADTenantId }}:
+            AADTenantId: ${{ parameters.configProperties.AADTenantId }}
