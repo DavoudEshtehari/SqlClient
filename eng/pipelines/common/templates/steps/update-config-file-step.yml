@@ -20,10 +20,6 @@ parameters:
     type: string
     default: ''
 
-  - name: TCPConnectionStringAASVBS
-    type: string
-    default: ''
-
   - name: TCPConnectionStringNoneVBS
     type: string
     default: ''
@@ -130,7 +126,40 @@ parameters:
 
 steps:
 # All properties should be added here, and this template should be used for any manipulation of the config.json file.
-- powershell: |
+- ${{ if eq(parameters.debug, true) }}:
+  - pwsh: |
+      Write-Host "TCPConnectionString: ${{parameters.TCPConnectionString }}"
+      Write-Host "NPConnectionString: ${{parameters.NPConnectionString }}"
+      Write-Host "TCPConnectionStringHGSVBS: ${{parameters.TCPConnectionStringHGSVBS }}"
+      Write-Host "TCPConnectionStringNoneVBS: ${{parameters.TCPConnectionStringNoneVBS }}"
+      Write-Host "TCPConnectionStringAASSGX: ${{parameters.TCPConnectionStringAASSGX }}"
+      Write-Host "EnclaveEnabled: ${{parameters.EnclaveEnabled }}"
+      Write-Host "TracingEnabled: ${{parameters.TracingEnabled }}"
+      Write-Host "AADAuthorityURL: ${{parameters.AADAuthorityURL }}"
+      Write-Host "AADPasswordConnectionString: ${{parameters.AADPasswordConnectionString }}"
+      Write-Host "AADServicePrincipalId: ${{parameters.AADServicePrincipalId }}"
+      Write-Host "AADServicePrincipalSecret: ${{parameters.AADServicePrincipalSecret }}"
+      Write-Host "AzureKeyVaultUrl: ${{parameters.AzureKeyVaultUrl }}"
+      Write-Host "AzureKeyVaultTenantId: ${{parameters.AzureKeyVaultTenantId }}"
+      Write-Host "UseManagedSNIOnWindows: ${{parameters.UseManagedSNIOnWindows }}"
+      Write-Host "UserManagedIdentityClientId: ${{parameters.UserManagedIdentityClientId }}"
+      Write-Host "FileStreamDirectory: ${{parameters.FileStreamDirectory }}"
+      Write-Host "LocalDbAppName: ${{parameters.LocalDbAppName }}"
+      Write-Host "LocalDbSharedInstanceName: ${{parameters.LocalDbSharedInstanceName }}"
+      Write-Host "AliasName: ${{parameters.AliasName }}"
+      Write-Host "SupportsIntegratedSecurity: ${{parameters.SupportsIntegratedSecurity }}"
+      Write-Host "SupportsFileStream: ${{parameters.SupportsFileStream }}"
+      Write-Host "DNSCachingConnString: ${{parameters.DNSCachingConnString }}"
+      Write-Host "DNSCachingServerCR: ${{parameters.DNSCachingServerCR }}"
+      Write-Host "DNSCachingServerTR: ${{parameters.DNSCachingServerTR }}"
+      Write-Host "EnclaveAzureDatabaseConnString: ${{parameters.EnclaveAzureDatabaseConnString }}"
+      Write-Host "IsDNSCachingSupportedCR: ${{parameters.IsDNSCachingSupportedCR }}"
+      Write-Host "IsDNSCachingSupportedTR: ${{parameters.IsDNSCachingSupportedTR }}"
+      Write-Host "IsAzureSynapse: ${{parameters.IsAzureSynapse }}"
+      Write-Host "ManagedIdentitySupported: ${{parameters.ManagedIdentitySupported }}"
+    displayName: 'Print parameters'
+
+- pwsh: |
     $jdata = Get-Content -Raw "config.default.json" | ConvertFrom-Json
     foreach ($p in $jdata)
     {
@@ -194,9 +223,6 @@ steps:
         if ("${{parameters.TCPConnectionStringNoneVBS }}" -ne ""){
           $p.TCPConnectionStringNoneVBS="${{parameters.TCPConnectionStringNoneVBS }}"}
 
-        if ("${{parameters.TCPConnectionStringAASVBS }}" -ne ""){
-          $p.TCPConnectionStringAASVBS="${{parameters.TCPConnectionStringAASVBS }}"}
-
         if ("${{parameters.TCPConnectionStringHGSVBS }}" -ne ""){
           $p.TCPConnectionStringHGSVBS="${{parameters.TCPConnectionStringHGSVBS }}"}
 
@@ -214,7 +240,7 @@ steps:
   displayName: 'Update config.json'
 
 - ${{ if eq(parameters.debug, true) }}:
-  - powershell: |
+  - pwsh: |
       $jdata = Get-Content -Raw "config.json" | ConvertFrom-Json
       foreach ($p in $jdata)
       {
