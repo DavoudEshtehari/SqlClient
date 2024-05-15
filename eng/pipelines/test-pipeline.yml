@@ -81,9 +81,21 @@ extends:
         testPlatforms: [AnyCPU, x86]
         testSets: [1, 2, 3]
         configProperties:
-          TCPConnectionString: '$(SQL_TCP_CONN_STRING)'
-          NPConnectionString: '$(SQL_NP_CONN_STRING)'
-          AADAuthorityURL: '$(AADAuthorityURL)'
+          TCPConnectionString: $(SQL_TCP_CONN_STRING)
+          NPConnectionString: $(SQL_NP_CONN_STRING)
+          AADAuthorityURL: $(AADAuthorityURL)
+          AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR)
+          AADServicePrincipalId: $(AADServicePrincipalId)
+          AADServicePrincipalSecret: $(AADServicePrincipalSecret)
+          AzureKeyVaultUrl: $(AzureKeyVaultUrl)
+          AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
+          SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
+          UseManagedSNIOnWindows: $(UseManagedSNIOnWindows)
+          UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+          FileStreamDirectory: $(FileStreamDirectory)
+          LocalDbAppName: $(LocalDbAppName)
+          LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
+          AliasName: $(SQLAliasName)
 
 # stages:
 # - stage: test1

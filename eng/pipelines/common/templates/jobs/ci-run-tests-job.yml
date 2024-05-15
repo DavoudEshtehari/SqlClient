@@ -54,9 +54,55 @@ jobs:
             NPConnectionString: ${{ parameters.configProperties.NPConnectionString }}
           ${{ if parameters.configProperties.AADAuthorityURL }}:
             AADAuthorityURL: ${{ parameters.configProperties.AADAuthorityURL }}
-          ${{ if parameters.configProperties.AADClientId }}:
-            AADClientId: ${{ parameters.configProperties.AADClientId }}
-          ${{ if parameters.configProperties.AADClientSecret }}:
-            AADClientSecret: ${{ parameters.configProperties.AADClientSecret }}
-          ${{ if parameters.configProperties.AADTenantId }}:
-            AADTenantId: ${{ parameters.configProperties.AADTenantId }}
+          ${{ if parameters.configProperties.TCPConnectionStringHGSVBS }}:
+            TCPConnectionStringHGSVBS: ${{ parameters.configProperties.TCPConnectionStringHGSVBS }}
+          ${{ if parameters.configProperties.TCPConnectionStringNoneVBS }}:
+            TCPConnectionStringNoneVBS: ${{ parameters.configProperties.TCPConnectionStringNoneVBS }}
+          ${{ if parameters.configProperties.TCPConnectionStringAASSGX }}:
+            TCPConnectionStringAASSGX: ${{ parameters.configProperties.TCPConnectionStringAASSGX }}
+          ${{ if parameters.configProperties.EnclaveEnabled }}:
+            EnclaveEnabled: ${{ eq(parameters.configProperties.EnclaveEnabled, 'true' }}
+          ${{ if parameters.configProperties.TracingEnabled }}:
+            TracingEnabled: ${{ eq(parameters.configProperties.TracingEnabled, 'true') }}
+          ${{ if parameters.configProperties.AADPasswordConnectionString }}:
+            AADPasswordConnectionString: ${{ parameters.configProperties.AADPasswordConnectionString }}
+          ${{ if parameters.configProperties.AADServicePrincipalId }}:
+            AADServicePrincipalId: ${{ parameters.configProperties.AADServicePrincipalId }}
+          ${{ if parameters.configProperties.AADServicePrincipalSecret }}:
+            AADServicePrincipalSecret: ${{ parameters.configProperties.AADServicePrincipalSecret }}
+          ${{ if parameters.configProperties.AzureKeyVaultUrl }}:
+            AzureKeyVaultUrl: ${{ parameters.configProperties.AzureKeyVaultUrl }}
+          ${{ if parameters.configProperties.AzureKeyVaultTenantId }}:
+            AzureKeyVaultTenantId: ${{ parameters.configProperties.AzureKeyVaultTenantId }}
+          ${{ if parameters.configProperties.UseManagedSNIOnWindows }}:
+            UseManagedSNIOnWindows: ${{ eq(parameters.configProperties.UseManagedSNIOnWindows, 'true') }}
+          ${{ if parameters.configProperties.UserManagedIdentityClientId }}:
+            UserManagedIdentityClientId: ${{ parameters.configProperties.UserManagedIdentityClientId }}
+          ${{ if parameters.configProperties.FileStreamDirectory }}:
+            FileStreamDirectory: ${{ parameters.configProperties.FileStreamDirectory }}
+          ${{ if parameters.configProperties.LocalDbAppName }}:
+            LocalDbAppName: ${{ parameters.configProperties.LocalDbAppName }}
+          ${{ if parameters.configProperties.LocalDbSharedInstanceName }}:
+            LocalDbSharedInstanceName: ${{ parameters.configProperties.LocalDbSharedInstanceName }}
+          ${{ if parameters.configProperties.AliasName }}:
+            AliasName: ${{ parameters.configProperties.AliasName }}
+          ${{ if parameters.configProperties.SupportsIntegratedSecurity }}:
+            SupportsIntegratedSecurity: ${{ eq(parameters.configProperties.SupportsIntegratedSecurity, 'true') }}
+          ${{ if parameters.configProperties.SupportsFileStream }}:
+            SupportsFileStream: ${{ eq(parameters.configProperties.SupportsFileStream, 'true') }}
+          ${{ if parameters.configProperties.DNSCachingConnString }}:
+            DNSCachingConnString: ${{ parameters.configProperties.DNSCachingConnString }}
+          ${{ if parameters.configProperties.DNSCachingServerCR }}:
+            DNSCachingServerCR: ${{ parameters.configProperties.DNSCachingServerCR }}
+          ${{ if parameters.configProperties.DNSCachingServerTR }}:
+            DNSCachingServerTR: ${{ parameters.configProperties.DNSCachingServerTR }}
+          ${{ if parameters.configProperties.EnclaveAzureDatabaseConnString }}:
+            EnclaveAzureDatabaseConnString: ${{ parameters.configProperties.EnclaveAzureDatabaseConnString }}
+          ${{ if parameters.configProperties.IsDNSCachingSupportedCR }}:
+            IsDNSCachingSupportedCR: ${{ eq(parameters.configProperties.IsDNSCachingSupportedCR, 'true') }}
+          ${{ if parameters.configProperties.IsDNSCachingSupportedTR }}:
+            IsDNSCachingSupportedTR: ${{ eq(parameters.configProperties.IsDNSCachingSupportedTR, 'true') }}
+          ${{ if parameters.configProperties.IsAzureSynapse }}:
+            IsAzureSynapse: ${{ eq(parameters.configProperties.IsAzureSynapse, 'true') }}
+          ${{ if parameters.configProperties.ManagedIdentitySupported }}:
+            ManagedIdentitySupported: ${{ eq(parameters.configProperties.ManagedIdentitySupported, 'true') }}
