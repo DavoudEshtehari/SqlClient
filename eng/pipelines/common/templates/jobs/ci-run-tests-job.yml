@@ -54,15 +54,9 @@ jobs:
       - template: ../steps/update-config-file-step.yml
         parameters:
           debug: ${{ parameters.debug }}
-          ${{ if eq(parameters.configProperties.propertyName, 'TCPConnectionString') }}:
-            TCPConnectionString: ${{ parameters.configProperties['TCPConnectionString'].value }}
-          ${{ if ne(parameters.configProperties['NPConnectionString'], '') }}:
-            NPConnectionString: ${{ parameters.configProperties['NPConnectionString'].value }}
-          ${{ if ne(parameters.configProperties['AADAuthorityURL'], '') }}:
-            AADAuthorityURL: ${{ parameters.configProperties['AADAuthorityURL'].value }}
-          ${{ if ne(parameters.configProperties['AADClientId'], '') }}:
-            AADClientId: ${{ parameters.configProperties['AADClientId'].value }}
-          ${{ if ne(parameters.configProperties['AADClientSecret'], '') }}:
-            AADClientSecret: ${{ parameters.configProperties['AADClientSecret'].value }}
-          ${{ if ne(parameters.configProperties['AADTenantId'], '') }}:
-            AADTenantId: ${{ parameters.configProperties['AADTenantId'].value }}
+          TCPConnectionString: ${{ parameters.configProperties['TCPConnectionString'].value }}
+          NPConnectionString: ${{ parameters.configProperties['NPConnectionString'].value }}
+          AADAuthorityURL: ${{ parameters.configProperties['AADAuthorityURL'].value }}
+          AADClientId: ${{ parameters.configProperties['AADClientId'].value }}
+          AADClientSecret: ${{ parameters.configProperties['AADClientSecret'].value }}
+          AADTenantId: ${{ parameters.configProperties['AADTenantId'].value }}

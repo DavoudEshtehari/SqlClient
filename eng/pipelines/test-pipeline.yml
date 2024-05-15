@@ -51,9 +51,6 @@ variables:
   - name: defaultPoolName
     value: 'Azure Pipelines'
 
-  - name: AADAuthorityURL
-    value: 'https://login.windows.net/72F988BF-86F1-41AF-91AB-2D7CD011DB47/'
-
 extends:
   template: common/templates/stages/ci-run-tests-stage.yml
   parameters:
