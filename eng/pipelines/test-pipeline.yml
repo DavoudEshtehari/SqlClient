@@ -97,6 +97,13 @@ stages:
     - script: SET
       displayName: 'Print Environment Variables'
 
+    - ${{ if parameters.configProperties.TCPConnectionString }}:
+      - script: echo "TCPConnectionString is set to ${{ parameters.configProperties.TCPConnectionString }}"
+    - ${{ if parameters.configProperties.NPConnectionString }}:
+      - script: echo "NPConnectionString is set to ${{ parameters.configProperties.NPConnectionString }}"
+    - ${{ if parameters.configProperties.AADAuthorityURL }}:
+      - script: echo "AADAuthorityURL is set to ${{ parameters.configProperties.AADAuthorityURL }}"
+
     - script: |
         echo '${{parameters.configProperties.propertyName }}'
         echo '${{parameters.configProperties.value }}'
