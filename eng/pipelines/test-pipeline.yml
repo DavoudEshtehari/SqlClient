@@ -55,7 +55,10 @@ extends:
   template: common/templates/stages/ci-run-tests-stage.yml
   parameters:
     # dependsOn: 'build'
+    debug: ${{ parameters.debug }}
     prebuildSteps:
+      - script: SET
+        displayName: 'Print Environment Variables'
       - task: DownloadPipelineArtifact@2
         displayName: 'Download NuGet Package'
         inputs:

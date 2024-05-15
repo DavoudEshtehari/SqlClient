@@ -4,6 +4,10 @@
 # See the LICENSE file in the project root for more information.                #
 #################################################################################
 parameters:
+  - name: debug
+    type: boolean
+    default: false
+
   - name: poolName
     type: string
     default: ADO-1ES-Pool
@@ -43,6 +47,7 @@ jobs:
     - ${{ if ne(parameters.configProperties, '{}') }}:
       - template: ../steps/update-config-file-step.yml
         parameters:
+          debug: ${{ parameters.debug }}
           ${{ if ne(parameters.configProperties['TCPConnectionString'], '') }}:
             TCPConnectionString: ${{ parameters.configProperties['TCPConnectionString'].value }}
           ${{ if ne(parameters.configProperties['NPConnectionString'], '') }}:
@@ -55,5 +60,3 @@ jobs:
             AADClientSecret: ${{ parameters.configProperties['AADClientSecret'].value }}
           ${{ if ne(parameters.configProperties['AADTenantId'], '') }}:
             AADTenantId: ${{ parameters.configProperties['AADTenantId'].value }}
-          
-          

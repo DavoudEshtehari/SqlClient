@@ -4,6 +4,10 @@
 # See the LICENSE file in the project root for more information.                #
 #################################################################################
 parameters:
+  - name: debug
+    type: boolean
+    default: false
+
   - name: TCPConnectionString
     type: string
     default: ''
@@ -208,3 +212,16 @@ steps:
     $jdata | ConvertTo-Json | Set-Content "config.json"
   workingDirectory: src/Microsoft.Data.SqlClient/tests/tools/Microsoft.Data.SqlClient.TestUtilities
   displayName: 'Update config.json'
+
+- ${{ if eq(parameters.debug, true) }}:
+  - powershell: |
+      $jdata = Get-Content -Raw "config.json" | ConvertFrom-Json
+      foreach ($p in $jdata)
+      {
+          foreach ($prop in $p.PSObject.Properties)
+          {
+              Write-Host "Property: $($prop.Name) Value: $($prop.Value)"
+          }
+      }
+    workingDirectory: src/Microsoft.Data.SqlClient/tests/tools/Microsoft.Data.SqlClient.TestUtilities
+    displayName: 'Read config.json'
