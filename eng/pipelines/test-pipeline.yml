@@ -80,6 +80,7 @@ extends:
         buildPlatforms: [AnyCPU]
         testPlatforms: [AnyCPU, x86]
         testSets: [1, 2, 3]
+        useManagedSNIOnWindows: [false, true]
         configProperties:
           TCPConnectionString: $(SQL_TCP_CONN_STRING)
           NPConnectionString: $(SQL_NP_CONN_STRING)
@@ -90,7 +91,6 @@ extends:
           AzureKeyVaultUrl: $(AzureKeyVaultUrl)
           AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
           SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
-          UseManagedSNIOnWindows: $(UseManagedSNIOnWindows)
           UserManagedIdentityClientId: $(UserManagedIdentityClientId)
           FileStreamDirectory: $(FileStreamDirectory)
           LocalDbAppName: $(LocalDbAppName)

@@ -19,6 +19,10 @@ parameters:
   - name: jobDisplayName
     type: string
 
+  - name: usemanagedSNI
+    type: boolean
+    default: false
+
   - name: configProperties
     type: object
     default: {} # - key: 'value'
@@ -61,7 +65,7 @@ jobs:
           ${{ if parameters.configProperties.TCPConnectionStringAASSGX }}:
             TCPConnectionStringAASSGX: ${{ parameters.configProperties.TCPConnectionStringAASSGX }}
           ${{ if parameters.configProperties.EnclaveEnabled }}:
-            EnclaveEnabled: ${{ eq(parameters.configProperties.EnclaveEnabled, 'true' }}
+            EnclaveEnabled: ${{ eq(parameters.configProperties.EnclaveEnabled, 'true') }}
           ${{ if parameters.configProperties.TracingEnabled }}:
             TracingEnabled: ${{ eq(parameters.configProperties.TracingEnabled, 'true') }}
           ${{ if parameters.configProperties.AADPasswordConnectionString }}:
@@ -75,7 +79,7 @@ jobs:
           ${{ if parameters.configProperties.AzureKeyVaultTenantId }}:
             AzureKeyVaultTenantId: ${{ parameters.configProperties.AzureKeyVaultTenantId }}
           ${{ if parameters.configProperties.UseManagedSNIOnWindows }}:
-            UseManagedSNIOnWindows: ${{ eq(parameters.configProperties.UseManagedSNIOnWindows, 'true') }}
+            UseManagedSNIOnWindows: ${{ parameters.usemanagedSNI }}
           ${{ if parameters.configProperties.UserManagedIdentityClientId }}:
             UserManagedIdentityClientId: ${{ parameters.configProperties.UserManagedIdentityClientId }}
           ${{ if parameters.configProperties.FileStreamDirectory }}:
