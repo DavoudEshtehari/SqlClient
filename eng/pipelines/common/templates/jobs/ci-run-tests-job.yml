@@ -43,12 +43,17 @@ jobs:
     - ${{ if ne(parameters.configProperties, '{}') }}:
       - template: ../steps/update-config-file-step.yml
         parameters:
-          ${{ each param in parameters.configProperties }}:
-            ${{ if eq(param.key, 'TCPConnectionString') }}:
-              TCPConnectionString: ${{ param.value }}
-            ${{ elseif eq(param.key, 'NPConnectionString') }}:
-              NPConnectionString: ${{ param.value }}
-            ${{ elseif eq(param.key, 'TracingEnabled') }}:
-              TracingEnabled: ${{ param.value }}
-            ${{ else }}:
-              AADAuthorityURL: ${{ param.value }}
+          ${{ if ne(parameters.configProperties['TCPConnectionString'], '') }}:
+            TCPConnectionString: ${{ parameters.configProperties['TCPConnectionString'].value }}
+          ${{ if ne(parameters.configProperties['NPConnectionString'], '') }}:
+            NPConnectionString: ${{ parameters.configProperties['NPConnectionString'].value }}
+          ${{ if ne(parameters.configProperties['AADAuthorityURL'], '') }}:
+            AADAuthorityURL: ${{ parameters.configProperties['AADAuthorityURL'].value }}
+          ${{ if ne(parameters.configProperties['AADClientId'], '') }}:
+            AADClientId: ${{ parameters.configProperties['AADClientId'].value }}
+          ${{ if ne(parameters.configProperties['AADClientSecret'], '') }}:
+            AADClientSecret: ${{ parameters.configProperties['AADClientSecret'].value }}
+          ${{ if ne(parameters.configProperties['AADTenantId'], '') }}:
+            AADTenantId: ${{ parameters.configProperties['AADTenantId'].value }}
+          
+          
