@@ -49,7 +49,7 @@ variables:
     value: Artifacts
 
   - name: defaultPoolName
-    value: 'Azure Pipelines'
+    value: ADO-1ES-Pool #'Azure Pipelines'
 
 extends:
   template: common/templates/stages/ci-run-tests-stage.yml
@@ -70,13 +70,12 @@ extends:
           targetPath: $(Pipeline.Workspace)/$(artifactName)
 
     testConfigurations:
-      windows_sql:
+      windows_sql19:
         pool: $(defaultPoolName)
         images:
-          Windows22_Sql19: windows-latest
-          Windows22_Sql22: windows-latest
+          Windows22_Sql19: ADO-MMS22-SQL19
+          # Windows22_Sql22: windows-latest
         TargetFrameworks: [net462, net6.0, net8.0]
-        TFwithManagedSNI: [net6.0, net8.0]
         buildPlatforms: [AnyCPU]
         testPlatforms: [AnyCPU, x86]
         testSets: [1, 2, 3]
@@ -96,6 +95,12 @@ extends:
           LocalDbAppName: $(LocalDbAppName)
           LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
           AliasName: $(SQLAliasName)
+          # extra config properties
+          instanceName: MSSQLSERVER
+          user: $(user)
+          saUser: $(saUser)
+          password: $(Password)
+          SQLRootPath: $(SQL19RootPath)
 
 # stages:
 # - stage: test1

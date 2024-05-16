@@ -39,10 +39,10 @@ jobs:
 - job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, 'unknown_image')) }}
 
   pool: 
-    vmImage: ${{ parameters.imageOverride }} # <<<<< temporary for testing >>>>>
-    # name: ${{parameters.poolName }}
-    # demands:
-    # - imageOverride -equals ${{ parameters.imageOverride }}
+    #vmImage: ${{ parameters.imageOverride }} # <<<<< temporary for testing >>>>>
+    name: ${{parameters.poolName }}
+    demands:
+    - imageOverride -equals ${{ parameters.imageOverride }}
 
   steps:
   - ${{ if ne(parameters.prebuildSteps, '') }}:
@@ -114,5 +114,18 @@ jobs:
     - pwsh: |
         New-Item -Path ${{ parameters.configProperties.FileStreamDirectory }} -ItemType Directory
       displayName: 'Create FileStreamFolder'
-      retryCountOnTaskFailure: 2
+      retryCountOnTaskFailure: 1
       continueOnError: true
+
+    - template: ../steps/configure-sql-server-step.yml
+      parameters:
+        ${{ if parameters.configProperties.instanceName }}:
+          instanceName: ${{ parameters.configProperties.instanceName }}
+        ${{ if parameters.configProperties.user }}:
+          user: ${{ parameters.configProperties.user }}
+        ${{ if parameters.configProperties.saUser }}:
+          saUser: ${{ parameters.configProperties.saUser }}
+        ${{ if parameters.configProperties.password }}:
+          password: ${{ parameters.configProperties.password }}
+        ${{ if parameters.configProperties.SQLRootPath }}:
+          SQLRootPath: ${{ parameters.configProperties.SQLRootPath }}

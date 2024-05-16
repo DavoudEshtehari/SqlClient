@@ -41,25 +41,67 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   default: false
 
 variables:
+  - template: libraries/ci-build-variables.yml
+
   - name: artifactName
     value: Artifacts
 
-stages:
-- stage: build
-  jobs:
-  - template: common/templates/jobs/build-nugets-ci-job.yml
-    parameters:
-      artifactName: $(artifactName)
+  - name: defaultPoolName
+    value: ADO-1ES-Pool
 
-- stage: test_windows2022
-  dependsOn: build
-  jobs:
-  - template: common/templates/jobs/run-tests-ci-job.yml
-    parameters:
-      poolName: ADO-1ES-Pool
-      jobDisplayName: 'Win_2022_SQL_2019'
-      imageOverride: ADO-MMS22-SQL19
-      configProperties:
-        - TCPConnectionString: $(SQL_TCP_CONN_STRING)
-        - NPConnectionString: $(SQL_NP_CONN_STRING)
-        - AADAuthorityURL: $(AADAuthorityURL)
+extends:
+  template: common/templates/stages/ci-run-tests-stage.yml
+  parameters:
+    # dependsOn: 'build'
+    debug: ${{ parameters.debug }}
+    prebuildSteps:
+      - script: SET
+        displayName: 'Print Environment Variables'
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download NuGet Package'
+        inputs:
+          buildType: specific
+          project: 'ADO.Net'
+          definition: 1825 
+          artifact: $(artifactName)
+          patterns: '**/*.nupkg'
+          targetPath: $(Pipeline.Workspace)/$(artifactName)
+
+    testConfigurations:
+      windows_sql_19:
+        pool: $(defaultPoolName)
+        images:
+          Windows22_Sql19: ADO-MMS22-SQL19
+        TargetFrameworks: [net462, net6.0, net8.0]
+        buildPlatforms: [AnyCPU]
+        testPlatforms: [AnyCPU, x86]
+        testSets: [1, 2, 3]
+        useManagedSNIOnWindows: [false, true]
+        configProperties:
+          TCPConnectionString: $(SQL_TCP_CONN_STRING)
+          NPConnectionString: $(SQL_NP_CONN_STRING)
+          AADAuthorityURL: $(AADAuthorityURL)
+          AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR)
+          AADServicePrincipalId: $(AADServicePrincipalId)
+          AADServicePrincipalSecret: $(AADServicePrincipalSecret)
+          AzureKeyVaultUrl: $(AzureKeyVaultUrl)
+          AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
+          SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
+          UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+          FileStreamDirectory: $(FileStreamDirectory)
+          LocalDbAppName: $(LocalDbAppName)
+          LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
+          AliasName: $(SQLAliasName)
+          # extra config properties
+          instanceName: MSSQLSERVER
+          user: $(user)
+          saUser: $(saUser)
+          password: $(Password)
+          SQLRootPath: $(SQL19RootPath)
+
+# stages:
+# - stage: build
+#   jobs:
+#   - template: common/templates/jobs/build-nugets-ci-job.yml
+#     parameters:
+#       artifactName: $(artifactName)
