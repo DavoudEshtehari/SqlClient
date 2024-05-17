@@ -52,20 +52,8 @@ variables:
 extends:
   template: common/templates/stages/ci-run-tests-stage.yml
   parameters:
-    # dependsOn: 'build'
+    dependsOn: 'build'
     debug: ${{ parameters.debug }}
-    prebuildSteps:
-      - script: SET
-        displayName: 'Print Environment Variables'
-      - task: DownloadPipelineArtifact@2
-        displayName: 'Download NuGet Package'
-        inputs:
-          buildType: specific
-          project: 'ADO.Net'
-          definition: 1825 
-          artifact: $(artifactName)
-          patterns: '**/*.nupkg'
-          targetPath: $(Pipeline.Workspace)/$(artifactName)
 
     testConfigurations:
       windows_sql_19:
@@ -96,9 +84,30 @@ extends:
           SQLRootPath: $(SQL19RootPath)
           enableLocalDB: true
 
-# stages:
-# - stage: build
-#   jobs:
-#   - template: common/templates/jobs/build-nugets-ci-job.yml
-#     parameters:
-#       artifactName: $(artifactName)
+    prebuildSteps:
+    - script: SET
+      displayName: 'Print Environment Variables'
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download NuGet Package'
+      inputs:
+        buildType: current
+        artifact: $(artifactName)
+        patterns: '**/*.nupkg'
+        targetPath: $(Pipeline.Workspace)/$(artifactName)
+    # - task: DownloadPipelineArtifact@2
+    #   displayName: 'Download NuGet Package'
+    #   inputs:
+    #     buildType: specific
+    #     project: 'ADO.Net'
+    #     definition: 1825 
+    #     artifact: $(artifactName)
+    #     patterns: '**/*.nupkg'
+    #     targetPath: $(Pipeline.Workspace)/$(artifactName)
+
+    preStage:
+    - stage: build
+      displayName: 'Build NuGet Packages'
+      jobs:
+      - template: common/templates/jobs/build-nugets-ci-job.yml
+        parameters:
+          artifactName: $(artifactName)

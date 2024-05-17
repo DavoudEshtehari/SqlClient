@@ -19,11 +19,13 @@ parameters:
     type: stepList
     default: []
   
-  - name: preStages
-    type: stageList
+  - name: preStage
+    type: stage
     default: []
 
 stages:
+  - ${{ parameters.preStage }}:
+    - ${{ parmeter.preStage }}
   - ${{ each config in parameters.testConfigurations }}:
     - ${{ each image in config.value.images }}:
         - stage: ${{ image.key }}
