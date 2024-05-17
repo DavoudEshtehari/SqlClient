@@ -48,7 +48,7 @@ parameters:
     default: Northwind
 
 steps:
-- ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
+- ${{ if eq(variables.Agent.OS, 'Windows_NT') }}:
   - powershell: |
       try
       {
