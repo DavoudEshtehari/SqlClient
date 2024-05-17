@@ -129,3 +129,15 @@ jobs:
           password: ${{ parameters.configProperties.password }}
         ${{ if parameters.configProperties.SQLRootPath }}:
           SQLRootPath: ${{ parameters.configProperties.SQLRootPath }}
+        ${{ if parameters.configProperties.x64AliasRegistryPath }}:
+          x64AliasRegistryPath: ${{ parameters.configProperties.x64AliasRegistryPath }}
+        ${{ if parameters.configProperties.x86AliasRegistryPath }}:
+          x86AliasRegistryPath: ${{ parameters.configProperties.x86AliasRegistryPath }}
+        ${{ if parameters.configProperties.SQLAliasName }}:
+          SQLAliasName: ${{ parameters.configProperties.SQLAliasName }}
+        ${{ if parameters.configProperties.SQLAliasPort }}:
+          SQLAliasPort: ${{ parameters.configProperties.SQLAliasPort }}
+        ${{ if parameters.configProperties.targetNetCoreVersion }}:
+          targetNetCoreVersion: ${{ parameters.configProperties.targetNetCoreVersion }}
+        ${{ if parameters.configProperties.databaseName }}:
+          databaseName: ${{ parameters.configProperties.databaseName }}

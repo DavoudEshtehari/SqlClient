@@ -18,6 +18,10 @@ parameters:
   - name: prebuildSteps
     type: stepList
     default: []
+  
+  - name: preStages
+    type: stageList
+    default: []
 
 stages:
   - ${{ each config in parameters.testConfigurations }}:

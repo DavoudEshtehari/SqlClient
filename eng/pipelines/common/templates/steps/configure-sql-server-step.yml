@@ -23,96 +23,233 @@ parameters:
   - name: SQLRootPath
     type: string
 
+  - name: x64AliasRegistryPath
+    type: string
+    default: $(x64AliasRegistryPath)
+
+  - name: x86AliasRegistryPath
+    type: string
+    default: $(x86AliasRegistryPath)
+
+  - name: SQLAliasName
+    type: string
+    default: $(SQLAliasName)
+
+  - name: SQLAliasPort
+    type: string
+    default: $(SQLAliasPort)
+
+  - name: targetNetCoreVersion
+    type: string
+    default: $(MainTargetNetCoreVersion)
+
   - name: databaseName
     type: string
     default: Northwind
 
 steps:
-- powershell: |
-    try
-    {
-    # enable TCP
-    Import-Module "sqlps"
-    $smo = 'Microsoft.SqlServer.Management.Smo.'
-    $wmi = new-object ($smo + 'Wmi.ManagedComputer').
-    # List the object properties, including the instance names.  
-    $Wmi  
-    
-    # Enable the TCP protocol on the default instance.  
-    $Tcp = $wmi.GetSmoObject("ManagedComputer[@Name='$env:COMPUTERNAME']/ ServerInstance[@Name='${{parameters.instanceName }}']/ServerProtocol[@Name='Tcp']")
-    $Tcp.IsEnabled = $true
-    $Tcp.Alter()
-    
-    # Enable the NP protocol on the default instance.
-    $Np = $wmi.GetSmoObject("ManagedComputer[@Name='$env:COMPUTERNAME']/ ServerInstance[@Name='${{parameters.instanceName }}']/ServerProtocol[@Name='Np']")
-    $Np.IsEnabled = $true
-    $Np.Alter()
-    
-    $Tcp
-    }
-    catch
-    {
-        $error[0] | format-list -force
-        throw
-    }
-    
-    New-NetFirewallRule -DisplayName "SQL TCP Ports" -Direction Inbound –Protocol TCP –LocalPort 1433 -Action allow
-    $sqlSrvPath = (Get-WmiObject win32_service | ?{$_.DisplayName -eq 'SQL Server (${{parameters.instanceName }})'} | select @{Name="Path"; Expression={$_.PathName.split('"')[1]}}).Path
-    New-NetFirewallRule -DisplayName "sqlservr.exe" -Program "$sqlSrvPath"
-  displayName: 'Enable TCP, NP & Firewall'
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-  retryCountOnTaskFailure: 2
+- ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
+  - powershell: |
+      try
+      {
+      # enable TCP
+      Import-Module "sqlps"
+      $smo = 'Microsoft.SqlServer.Management.Smo.'
+      $wmi = new-object ($smo + 'Wmi.ManagedComputer').
+      # List the object properties, including the instance names.  
+      $Wmi  
+      
+      # Enable the TCP protocol on the default instance.  
+      $Tcp = $wmi.GetSmoObject("ManagedComputer[@Name='$env:COMPUTERNAME']/ ServerInstance[@Name='${{parameters.instanceName }}']/ServerProtocol[@Name='Tcp']")
+      $Tcp.IsEnabled = $true
+      $Tcp.Alter()
+      
+      # Enable the NP protocol on the default instance.
+      $Np = $wmi.GetSmoObject("ManagedComputer[@Name='$env:COMPUTERNAME']/ ServerInstance[@Name='${{parameters.instanceName }}']/ServerProtocol[@Name='Np']")
+      $Np.IsEnabled = $true
+      $Np.Alter()
+      
+      $Tcp
+      }
+      catch
+      {
+          $error[0] | format-list -force
+          throw
+      }
+      
+      New-NetFirewallRule -DisplayName "SQL TCP Ports" -Direction Inbound –Protocol TCP –LocalPort 1433 -Action allow
+      $sqlSrvPath = (Get-WmiObject win32_service | ?{$_.DisplayName -eq 'SQL Server (${{parameters.instanceName }})'} | select @{Name="Path"; Expression={$_.PathName.split('"')[1]}}).Path
+      New-NetFirewallRule -DisplayName "sqlservr.exe" -Program "$sqlSrvPath"
+    displayName: 'Enable TCP, NP & Firewall'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+    retryCountOnTaskFailure: 2
 
-- powershell: |
-    $password = "${{parameters.password }}"
-    if ( "generated_placeholder" -eq $password )
-    {
-        $password = [guid]::NewGuid().ToString()
-    }
-    
-    $machineName = $env:COMPUTERNAME
-    
-    if ("${{parameters.instanceName }}" -ne "MSSQLSERVER"){
-      $machineName += "\${{parameters.instanceName }}"
-    }
-    
-    Write-Host $machineName
-    Import-Module "sqlps"
-    Invoke-Sqlcmd -ServerInstance "$machineName" @"
-        CREATE LOGIN [${{parameters.user }}] WITH PASSWORD=N'$password',
-        DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF;
-        CREATE USER [${{parameters.user }}] FROM LOGIN [${{parameters.user }}];
-        ALTER SERVER ROLE [sysadmin] ADD MEMBER [${{parameters.user }}];
-        ALTER LOGIN [${{parameters.saUser }}] ENABLE;
-        ALTER LOGIN [${{parameters.saUser }}] WITH PASSWORD = '$password';
-    "@
-  displayName: 'Create SQL user'
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-  env:
-    SQL_USER: ${{parameters.user }}
-    SQL_PASSWD: ${{parameters.password }}
+  - powershell: |
+      $password = "${{parameters.password }}"
+      if ( "generated_placeholder" -eq $password )
+      {
+          $password = [guid]::NewGuid().ToString()
+      }
+      
+      $machineName = $env:COMPUTERNAME
+      
+      if ("${{parameters.instanceName }}" -ne "MSSQLSERVER"){
+        $machineName += "\${{parameters.instanceName }}"
+      }
+      
+      Write-Host $machineName
+      Import-Module "sqlps"
+      Invoke-Sqlcmd -ServerInstance "$machineName" @"
+          CREATE LOGIN [${{parameters.user }}] WITH PASSWORD=N'$password',
+          DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF;
+          CREATE USER [${{parameters.user }}] FROM LOGIN [${{parameters.user }}];
+          ALTER SERVER ROLE [sysadmin] ADD MEMBER [${{parameters.user }}];
+          ALTER LOGIN [${{parameters.saUser }}] ENABLE;
+          ALTER LOGIN [${{parameters.saUser }}] WITH PASSWORD = '$password';
+      "@
+    displayName: 'Create SQL user'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+    env:
+      SQL_USER: ${{parameters.user }}
+      SQL_PASSWD: ${{parameters.password }}
 
-- powershell: |
-    #Enable FileStream
-    $instance = "${{parameters.instanceName }}"
-    $wmi = Get-WmiObject -Namespace "${{parameters.SQLRootPath }}" -Class FilestreamSettings | where {$_.InstanceName -eq $instance}
-    $wmi.EnableFilestream(3, $instance)
+  - powershell: |
+      #Enable FileStream
+      $instance = "${{parameters.instanceName }}"
+      $wmi = Get-WmiObject -Namespace "${{parameters.SQLRootPath }}" -Class FilestreamSettings | where {$_.InstanceName -eq $instance}
+      $wmi.EnableFilestream(3, $instance)
+      
+      $machineName = $env:COMPUTERNAME
+      
+      if ("${{parameters.instanceName }}" -ne "MSSQLSERVER"){
+        $machineName += "\${{parameters.instanceName }}"
+      }
+      
+      #Change the access level for FileStream for SQLServer
+      Set-ExecutionPolicy Unrestricted
+      Import-Module "sqlps"
+      Invoke-Sqlcmd -ServerInstance "$machineName" @"
+          EXEC sp_configure filestream_access_level, 2;
+          RECONFIGURE;
+      "@
+    displayName: 'Enable FileStream'
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    env:
+      SQL_USER: ${{parameters.user }}
+      SQL_PASSWD: ${{parameters.password }}
+
+  - powershell: |
+      $SQLServerName = ("{0}" -f [System.Net.Dns]::GetHostByName($env:computerName).HostName)
+      Write-Host  FQDN is: $SQLServerName
+      
+      if ((Test-Path -Path ${{parameters.x64AliasRegistryPath }}) -ne $true) {
+          New-Item ${{parameters.x64AliasRegistryPath }}
+      }
+      
+      if ((Test-Path -Path ${{parameters.x86AliasRegistryPath }}) -ne $true) {
+          New-Item ${{parameters.x86AliasRegistryPath }}
+      }
+      
+      $TCPAliasName = "DBMSSOCN, $SQLServerName, ${{parameters.SQLAliasPort }}"
+      
+      New-ItemProperty -Path ${{parameters.x86AliasRegistryPath }} -Name ${{parameters.SQLAliasName }} -PropertyType string -Value $TCPAliasName
+      New-ItemProperty -Path ${{parameters.x64AliasRegistryPath }} -Name ${{parameters.SQLAliasName }} -PropertyType string -Value $TCPAliasName
+    displayName: 'Setup SQL Alias'
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+  - powershell: |
+      # You need to restart SQL Server for the change to persist
+      # -Force takes care of any dependent services, like SQL Agent.
+      # Note: if the instance is named, replace MSSQLSERVER with MSSQL$ followed by
+      # the name of the instance (e.g. MSSQL$MYINSTANCE)
+      
+      $serviceName = "${{parameters.instanceName }}"
+      $InstancePrefix = 'MSSQL$'
+      
+      if ( "${{parameters.instanceName }}" -ne "MSSQLSERVER" )
+      {
+          $serviceName = $InstancePrefix+"${{parameters.instanceName }}"
+      }
+      
+      Restart-Service -Name "$serviceName" -Force
     
-    $machineName = $env:COMPUTERNAME
+    displayName: 'Restart SQL Server'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
+  - powershell: |
+      $arrService = Get-Service -Name "SQLBrowser"
+      $arrService 
+      
+      if ($arrService.Status -eq 'Stopped') {
+          Write-Host 'Attempt to run the service ...'
+          # updating the startup type to make sure it's not disabled
+          Set-Service -StartupType Automatic $arrService.Name    
+          $arrService.Start()
+          
+          $arrService.WaitForStatus('Running', '00:00:30')
+          if ($arrService.Status -eq 'Running') {
+              $arrService
+          } else {
+              Write-Error 'Timed out waiting for service to start.'
+          }
+      }
+    displayName: 'Start Sql Server Browser'
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+- bash: |
+    echo ${{parameters.targetNetCoreVersion }}
     
-    if ("${{parameters.instanceName }}" -ne "MSSQLSERVER"){
-      $machineName += "\${{parameters.instanceName }}"
-    }
+    sudo systemctl stop mssql-server
     
-    #Change the access level for FileStream for SQLServer
-    Set-ExecutionPolicy Unrestricted
-    Import-Module "sqlps"
-    Invoke-Sqlcmd -ServerInstance "$machineName" @"
-        EXEC sp_configure filestream_access_level, 2;
-        RECONFIGURE;
-    "@
-  displayName: 'Enable FileStream'
-  condition: eq(variables['Agent.OS'], 'Windows_NT')
-  env:
-    SQL_USER: ${{parameters.user }}
-    SQL_PASSWD: ${{parameters.password }}
+    # Password for the SA user (required)
+    MSSQL_SA_PW=${{parameters.password }}
+    if [ "$MSSQL_SA_PW" = "generated_placeholder" ]; then
+      exit 0
+    fi
+    
+    # Product ID of the version of SQL server you're installing
+    # Must be evaluation, developer, express, web, standard, enterprise, or your 25 digit product key
+    MSSQL_PID='enterprise'
+    
+    echo Running mssql-conf setup...
+    sudo MSSQL_SA_PASSWORD=$MSSQL_SA_PW\
+          MSSQL_PID=$MSSQL_PID \
+          /opt/mssql/bin/mssql-conf -n setup accept-eula
+    
+    # Connect to server and get the version:
+    counter=1
+    errstatus=1
+    while [ $counter -le 5 ] && [ $errstatus = 1 ]
+    do
+      echo Waiting for SQL Server to start...
+      sleep 3s
+      /opt/mssql-tools/bin/sqlcmd \
+        -S localhost \
+        -U SA \
+        -P $MSSQL_SA_PW\
+        -Q "SELECT @@VERSION" 2>/dev/null
+      errstatus=$?
+      ((counter++))
+    done
+    
+    # Display error if connection failed:
+    if [ $errstatus = 1 ]
+    then
+      echo Cannot connect to SQL Server, installation aborted
+      exit $errstatus
+    fi
+  displayName: 'Configure SQL Server (Linux)'
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build Ext Utilities'
+  inputs:
+    arguments: '-f ${{parameters.targetNetCoreVersion }}'
+    workingDirectory: src/Microsoft.Data.SqlClient/tests/tools/Microsoft.Data.SqlClient.ExtUtilities
+
+- task: DotNetCoreCLI@2
+  displayName: 'Create Test Database ${{parameters.databaseName }}'
+  inputs:
+    command: run
+    arguments: '-f ${{parameters.targetNetCoreVersion }} -- "CreateDatabase" ${{parameters.databaseName }} '
+    workingDirectory: src/Microsoft.Data.SqlClient/tests/tools/Microsoft.Data.SqlClient.ExtUtilities

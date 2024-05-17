@@ -93,10 +93,6 @@ extends:
           LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
           AliasName: $(SQLAliasName)
           # extra config properties
-          instanceName: MSSQLSERVER
-          user: $(user)
-          saUser: $(saUser)
-          password: $(Password)
           SQLRootPath: $(SQL19RootPath)
 
 # stages:
