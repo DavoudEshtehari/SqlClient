@@ -47,7 +47,20 @@ parameters:
     type: string
     default: Northwind
 
+  - name: enableLocalDB
+    type: boolean
+    default: false
+
+  - name: localDbAppName
+    type: string
+    default: $(LocalDbAppName)
+
+  - name: localDbSharedInstanceName
+    type: string
+    default: $(LocalDbSharedInstanceName)
+
 steps:
+# windows only steps
 - powershell: |
     try
     {
@@ -79,7 +92,7 @@ steps:
     New-NetFirewallRule -DisplayName "SQL TCP Ports" -Direction Inbound –Protocol TCP –LocalPort 1433 -Action allow
     $sqlSrvPath = (Get-WmiObject win32_service | ?{$_.DisplayName -eq 'SQL Server (${{parameters.instanceName }})'} | select @{Name="Path"; Expression={$_.PathName.split('"')[1]}}).Path
     New-NetFirewallRule -DisplayName "sqlservr.exe" -Program "$sqlSrvPath"
-  displayName: 'Enable TCP, NP & Firewall'
+  displayName: 'Enable TCP, NP & Firewall [Win]'
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
   retryCountOnTaskFailure: 2
 
@@ -106,7 +119,7 @@ steps:
         ALTER LOGIN [${{parameters.saUser }}] ENABLE;
         ALTER LOGIN [${{parameters.saUser }}] WITH PASSWORD = '$password';
     "@
-  displayName: 'Create SQL user'
+  displayName: 'Create SQL user [Win]'
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
   env:
     SQL_USER: ${{parameters.user }}
@@ -131,7 +144,7 @@ steps:
         EXEC sp_configure filestream_access_level, 2;
         RECONFIGURE;
     "@
-  displayName: 'Enable FileStream'
+  displayName: 'Enable FileStream [Win]'
   condition: eq(variables['Agent.OS'], 'Windows_NT')
   env:
     SQL_USER: ${{parameters.user }}
@@ -153,7 +166,7 @@ steps:
     
     New-ItemProperty -Path ${{parameters.x86AliasRegistryPath }} -Name ${{parameters.SQLAliasName }} -PropertyType string -Value $TCPAliasName
     New-ItemProperty -Path ${{parameters.x64AliasRegistryPath }} -Name ${{parameters.SQLAliasName }} -PropertyType string -Value $TCPAliasName
-  displayName: 'Setup SQL Alias'
+  displayName: 'Setup SQL Alias [Win]'
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
 - powershell: |
@@ -172,7 +185,7 @@ steps:
     
     Restart-Service -Name "$serviceName" -Force
   
-  displayName: 'Restart SQL Server'
+  displayName: 'Restart SQL Server [Win]'
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
 - powershell: |
@@ -192,9 +205,25 @@ steps:
             Write-Error 'Timed out waiting for service to start.'
         }
     }
-  displayName: 'Start Sql Server Browser'
+  displayName: 'Start Sql Server Browser [Win]'
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
+- ${{ if parameters.enableLocalDB }}:
+  - powershell: |
+      #script to enable local db
+      
+      SqlLocalDB info
+      #SqlLocalDB create ${{parameters.localDbAppName }}
+      SqlLocalDB info ${{parameters.localDbAppName }}
+      SqlLocalDB share ${{parameters.localDbAppName }} ${{parameters.LocalDbSharedInstanceName }}
+      SqlLocalDB start ${{parameters.localDbAppName }}
+      SqlLocalDB info ${{parameters.localDbAppName }}
+      
+      sqlcmd -S "(localdb)\.\${{parameters.LocalDbSharedInstanceName }}" -q "SELECT @@VERSION"
+    displayName: 'Enable LocalDB [Win]'
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+# Linux only steps
 - bash: |
     echo ${{parameters.targetNetCoreVersion }}
     
@@ -237,9 +266,10 @@ steps:
       echo Cannot connect to SQL Server, installation aborted
       exit $errstatus
     fi
-  displayName: 'Configure SQL Server (Linux)'
+  displayName: 'Configure SQL Server [Linux]'
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
+# Common steps
 - task: DotNetCoreCLI@2
   displayName: 'Build Ext Utilities'
   inputs:

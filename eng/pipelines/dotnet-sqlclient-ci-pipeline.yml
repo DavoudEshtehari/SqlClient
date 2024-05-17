@@ -94,6 +94,7 @@ extends:
           AliasName: $(SQLAliasName)
           # extra config properties
           SQLRootPath: $(SQL19RootPath)
+          enableLocalDB: true
 
 # stages:
 # - stage: build

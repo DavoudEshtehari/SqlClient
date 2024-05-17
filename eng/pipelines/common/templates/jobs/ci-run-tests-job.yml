@@ -141,3 +141,9 @@ jobs:
           targetNetCoreVersion: ${{ parameters.configProperties.targetNetCoreVersion }}
         ${{ if parameters.configProperties.databaseName }}:
           databaseName: ${{ parameters.configProperties.databaseName }}
+        ${{ if parameters.configProperties.enableLocalDB }}:
+          enableLocalDB: ${{ parameters.configProperties.enableLocalDB }}
+        ${{ if parameters.configProperties.localDbAppName }}:
+          LocalDbAppName: ${{ parameters.configProperties.localDbAppName }}
+        ${{ if parameters.configProperties.localDbSharedInstanceName }}:
+          LocalDbSharedInstanceName: ${{ parameters.configProperties.localDbSharedInstanceName }}
