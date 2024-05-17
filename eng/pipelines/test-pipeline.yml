@@ -51,66 +51,73 @@ variables:
   - name: defaultPoolName
     value: 'Azure Pipelines'
 
-extends:
-  template: common/templates/stages/ci-run-tests-stage.yml
-  parameters:
-    # dependsOn: 'build'
-    debug: ${{ parameters.debug }}
-    prebuildSteps:
-      - script: SET
-        displayName: 'Print Environment Variables'
-      - task: DownloadPipelineArtifact@2
-        displayName: 'Download NuGet Package'
-        inputs:
-          buildType: specific
-          project: 'ADO.Net'
-          definition: 1825 
-          artifact: $(artifactName)
-          patterns: '**/*.nupkg'
-          targetPath: $(Pipeline.Workspace)/$(artifactName)
+# extends:
+#   template: common/templates/stages/ci-run-tests-stage.yml
+#   parameters:
+#     # dependsOn: 'build'
+#     debug: ${{ parameters.debug }}
+#     prebuildSteps:
+#       - script: SET
+#         displayName: 'Print Environment Variables'
+#       - task: DownloadPipelineArtifact@2
+#         displayName: 'Download NuGet Package'
+#         inputs:
+#           buildType: specific
+#           project: 'ADO.Net'
+#           definition: 1825 
+#           artifact: $(artifactName)
+#           patterns: '**/*.nupkg'
+#           targetPath: $(Pipeline.Workspace)/$(artifactName)
 
-    testConfigurations:
-      windows_sql:
-        pool: $(defaultPoolName)
-        images:
-          Windows22_Sql19: windows-latest
-          Windows22_Sql22: windows-latest
-        TargetFrameworks: [net462, net6.0, net8.0]
-        buildPlatforms: [AnyCPU]
-        testPlatforms: [AnyCPU, x86]
-        testSets: [1, 2, 3]
-        useManagedSNIOnWindows: [false, true]
-        configProperties:
-          TCPConnectionString: $(SQL_TCP_CONN_STRING)
-          NPConnectionString: $(SQL_NP_CONN_STRING)
-          AADAuthorityURL: $(AADAuthorityURL)
-          AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR)
-          AADServicePrincipalId: $(AADServicePrincipalId)
-          AADServicePrincipalSecret: $(AADServicePrincipalSecret)
-          AzureKeyVaultUrl: $(AzureKeyVaultUrl)
-          AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
-          SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
-          UserManagedIdentityClientId: $(UserManagedIdentityClientId)
-          FileStreamDirectory: $(FileStreamDirectory)
-          LocalDbAppName: $(LocalDbAppName)
-          LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
-          AliasName: $(SQLAliasName)
-          # extra config properties
-          SQLRootPath: $(SQL19RootPath)
+#     testConfigurations:
+#       windows_sql:
+#         pool: $(defaultPoolName)
+#         images:
+#           Windows22_Sql19: windows-latest
+#           Windows22_Sql22: windows-latest
+#         TargetFrameworks: [net462, net6.0, net8.0]
+#         buildPlatforms: [AnyCPU]
+#         testPlatforms: [AnyCPU, x86]
+#         testSets: [1, 2, 3]
+#         useManagedSNIOnWindows: [false, true]
+#         configProperties:
+#           TCPConnectionString: $(SQL_TCP_CONN_STRING)
+#           NPConnectionString: $(SQL_NP_CONN_STRING)
+#           AADAuthorityURL: $(AADAuthorityURL)
+#           AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR)
+#           AADServicePrincipalId: $(AADServicePrincipalId)
+#           AADServicePrincipalSecret: $(AADServicePrincipalSecret)
+#           AzureKeyVaultUrl: $(AzureKeyVaultUrl)
+#           AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
+#           SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
+#           UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+#           FileStreamDirectory: $(FileStreamDirectory)
+#           LocalDbAppName: $(LocalDbAppName)
+#           LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
+#           AliasName: $(SQLAliasName)
+#           # extra config properties
+#           SQLRootPath: $(SQL19RootPath)
 
 
 
-# stages:
-# - stage: test1
-#   jobs:
+stages:
+- stage: test1
+  jobs:
 
-#   - job: job1
-#     pool: 
-#       vmImage: 'windows-latest'
+  - job: job1
+    pool: 
+      vmImage: 'windows-latest'
 
-#     steps:
-#     - script: SET
-#       displayName: 'Print Environment Variables'
+    steps:
+    - script: SET
+      displayName: 'Print Environment Variables'
+
+    - ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
+      - script: echo "1. $(Agent.OS)"
+    - ${{ if eq(variables.Agent.OS, 'Windows_NT') }}:
+      - script: echo "2. $(Agent.OS)"
+
+    - script: echo "3. $(Agent.OS)"
 
 #     - ${{ if parameters.configProperties.TCPConnectionString }}:
 #       - script: echo "TCPConnectionString is set to ${{ parameters.configProperties.TCPConnectionString }}"
