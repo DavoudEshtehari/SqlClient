@@ -101,6 +101,13 @@ variables:
 
 
 stages:
+- stage: build
+  displayName: 'Build NuGet Packages'
+  jobs:
+  - template: common/templates/jobs/ci-build-nugets-job.yml
+    parameters:
+      artifactName: Artifacts
+
 - stage: test1
   jobs:
 
