@@ -20,7 +20,7 @@ parameters:
     type: string
     default: '$(Configuration)'
 
-  - name: generateSymbols
+  - name: generateSymbolsPackage
     type: boolean
     default: true
 
@@ -51,10 +51,10 @@ steps:
   displayName: CommitHead
  
 - task: NuGetCommand@2
-  displayName: 'NuGet pack with snupkg'
+  displayName: ${{parameters.displayName }}
   inputs:
     command: custom
-    ${{ if parameters.generateSymbols }}:
+    ${{ if parameters.generateSymbolsPackage }}:
       arguments: 'pack -Symbols -SymbolPackageFormat snupkg ${{parameters.nuspecPath}} -Version ${{parameters.NugetPackageVersion}} -OutputDirectory ${{parameters.OutputDirectory}} -properties "COMMITID=$(CommitHead);Configuration=${{parameters.Configuration}};ReferenceType=${{parameters.referenceType}}"'
     ${{else }}:
       arguments: 'pack ${{parameters.nuspecPath}} -Version ${{parameters.NugetPackageVersion}} -OutputDirectory ${{parameters.OutputDirectory}} -properties "COMMITID=$(CommitHead);Configuration=${{parameters.Configuration}};ReferenceType=${{parameters.referenceType}}"'

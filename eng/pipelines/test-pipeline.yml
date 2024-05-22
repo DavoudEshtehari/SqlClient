@@ -4,9 +4,7 @@
 # See the LICENSE file in the project root for more information.                #
 #################################################################################
 
-name: $(Year:YY)$(DayOfYear)$(Rev:.rr)
-
-
+name: $(DayOfYear)$(Rev:rr)
 parameters: # parameters are shown up in ADO UI in a build queue time
 - name: 'debug'
   displayName: 'Enable debug output'

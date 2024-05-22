@@ -76,7 +76,8 @@ jobs:
       NugetPackageVersion: $(NugetPackageVersion)
       configuration: $(Configuration)
       nuspecPath: 'tools/specs/Microsoft.Data.SqlClient.nuspec'
-      generateSymbols: false
+      OutputDirectory: ${{ parameters.artifactName }}
+      generateSymbolsPackage: false
       displayName: 'Generate NuGet package M.D.SqlClient'
 
   - template: ../steps/generate-nuget-package-step.yml@self
@@ -84,11 +85,13 @@ jobs:
       NugetPackageVersion: $(NugetPackageVersion)
       configuration: $(Configuration)
       nuspecPath: 'tools/specs/add-ons/Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.nuspec'
-      generateSymbols: false
-      downloadNuget: false
+      OutputDirectory: ${{ parameters.artifactName }}
+      generateSymbolsPackage: false
+      installNuget: false
       displayName: 'Generate NuGet package AKV Provider'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Artifacts'
     inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)'
       ArtifactName: ${{ parameters.artifactName }}
