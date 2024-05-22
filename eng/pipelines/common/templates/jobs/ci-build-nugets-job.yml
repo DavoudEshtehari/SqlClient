@@ -71,29 +71,22 @@ jobs:
       configuration: '$(Configuration)'
       msbuildArguments: '-t:BuildAKVNetCoreAllOS -p:BuildNumber=$(BuildNumber)'
 
-  - task: NuGetToolInstaller@1
-    displayName: 'Use NuGet'
-    inputs:
-      checkLatest: true
+  - template: ../steps/generate-nuget-package-step.yml@self
+    parameters:
+      NugetPackageVersion: $(NugetPackageVersion)
+      configuration: $(Configuration)
+      nuspecPath: 'tools/specs/Microsoft.Data.SqlClient.nuspec'
+      generateSymbols: false
+      displayName: 'Generate NuGet package M.D.SqlClient'
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet pack M.D.SqlClient'
-    inputs:
-      command: pack
-      packagesToPack: tools/specs/Microsoft.Data.SqlClient.nuspec
-      configuration: '$(Configuration)'
-      versioningScheme: byEnvVar
-      versionEnvVar: NugetPackageVersion
-
-  - task: NuGetCommand@2
-    displayName: 'NuGet pack AKV Provider'
-    inputs:
-      command: pack
-      packagesToPack: 'tools/specs/add-ons/Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.nuspec'
-      configuration: '$(Configuration)'
-      versioningScheme: byEnvVar
-      versionEnvVar: NugetPackageVersion
-      buildProperties: 'ReferenceType=Project'
+  - template: ../steps/generate-nuget-package-step.yml@self
+    parameters:
+      NugetPackageVersion: $(NugetPackageVersion)
+      configuration: $(Configuration)
+      nuspecPath: 'tools/specs/add-ons/Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.nuspec'
+      generateSymbols: false
+      downloadNuget: false
+      displayName: 'Generate NuGet package AKV Provider'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Artifacts'
