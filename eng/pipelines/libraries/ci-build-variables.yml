@@ -21,3 +21,5 @@ variables:
     value: true
   - name: runCodesignValidationInjection
     value: false
+  - name: packagePath
+    value: '$(Build.SourcesDirectory)/packages'
