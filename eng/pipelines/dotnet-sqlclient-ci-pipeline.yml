@@ -107,7 +107,7 @@ stages:
         inputs:
           buildType: specific
           project: 'ADO.Net'
-          definition: 1825 
+          definition: 1831 # test-Davoud, #1825: self 
           artifact: $(artifactName)
           patterns: '**/*.nupkg'
           targetPath: $(Pipeline.Workspace)/$(artifactName)
