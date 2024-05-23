@@ -40,7 +40,7 @@ steps:
     $nugetConfig.Save("$rootFolder\Nuget.config")
   displayName: 'Update NuGet config file to read from Nuget folder'
 
-- ${{ if eq(parameters.debug, true) }}:
+- ${{ if parameters.debug }}:
   - pwsh: |
       # Display the content of the Nuget.config file
       Get-Content -Path "Nuget.config"
