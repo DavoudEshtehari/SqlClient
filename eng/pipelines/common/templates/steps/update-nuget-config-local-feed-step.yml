@@ -4,6 +4,10 @@
 # See the LICENSE file in the project root for more information.                #
 #################################################################################
 parameters:
+  - name: debug
+    type: boolean
+    default: false
+
   - name: downloadedNugetPath # path to the downloaded nuget files
     type: string
 
@@ -12,7 +16,7 @@ parameters:
     default: $(NugetPackageVersion)
 
 steps:
-- powershell: |
+- pwsh: |
     # Get a list of package sources available
     Get-PackageSource
 
@@ -36,6 +40,12 @@ steps:
     $nugetConfig.Save("$rootFolder\Nuget.config")
   displayName: 'Update NuGet config file to read from Nuget folder'
 
+- ${{ if parameters.debug }}:
+  - pwsh: |
+      # Display the content of the Nuget.config file
+      Get-Content -Path "Nuget.config"
+    displayName: 'Display NuGet config file content'
+
 - task: MSBuild@1
   displayName: 'Restore nugets'
   inputs:
@@ -43,7 +53,7 @@ steps:
     msbuildArchitecture: x64
     msbuildArguments: '-t:restore'
 
-- powershell: |
+- pwsh: |
     $Doc = [xml](Get-Content ".\Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.csproj")
     $parent_xpath = '/Project/ItemGroup/ProjectReference'
     $node = $Doc.SelectSingleNode($parent_xpath)
