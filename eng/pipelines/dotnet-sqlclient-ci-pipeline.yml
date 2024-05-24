@@ -40,11 +40,6 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: boolean
   default: false
 
-- name: nugetPackageVersion
-  displayName: 'NuGet Package Version'
-  type: string
-  default: '5.20.0-pull.114304'
-
 variables:
   - template: libraries/ci-build-variables.yml
 
@@ -120,4 +115,3 @@ stages:
         parameters:
           downloadedNugetPath: $(Pipeline.Workspace)\$(artifactName)
           debug: ${{ parameters.debug }}
-          nugetPackageVersion: ${{parameters.nugetPackageVersion }} # temporary for testing purposes; should be removed later
