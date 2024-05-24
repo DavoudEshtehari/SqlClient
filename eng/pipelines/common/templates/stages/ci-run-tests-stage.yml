@@ -49,7 +49,10 @@ stages:
                         debug: ${{ parameters.debug }}
                         poolName: ${{ config.value.pool }}
                         imageOverride: ${{ image.value }}
-                        jobDisplayName: ${{ format('{0}_{1}_{2}_{3}', replace(targetFramework, '.', '_'), platform, usemanagedSNI, testSet) }}
+                        ${{if eq(usemanagedSNI, 'true') }}:
+                          jobDisplayName: ${{ format('{0}_{1}_{2}_{3}', replace(targetFramework, '.', '_'), platform, 'ManagedSNI', testSet) }}
+                        ${{ else }}:
+                          jobDisplayName: ${{ format('{0}_{1}_{2}_{3}', replace(targetFramework, '.', '_'), platform, 'NativeSNI', testSet) }}
                         configProperties: ${{ config.value.configProperties }}
                         useManagedSNI: ${{ useManagedSNI }}
                         prebuildSteps: ${{ parameters.prebuildSteps }}                  
