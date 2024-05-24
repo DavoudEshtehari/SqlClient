@@ -72,7 +72,7 @@ stages:
           pool: $(defaultPoolName)
           images:
             Windows22_Sql19: ADO-MMS22-SQL19
-          TargetFrameworks: [net462] #[net462, net6.0, net8.0]
+          TargetFrameworks: [net462, net6.0] #[net462, net6.0, net8.0]
           buildPlatforms: [AnyCPU]
           testPlatforms: [AnyCPU, x86]
           testSets: [1] # [1, 2, 3]
