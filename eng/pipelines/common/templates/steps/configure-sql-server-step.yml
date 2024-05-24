@@ -23,6 +23,9 @@ parameters:
   - name: SQLRootPath
     type: string
 
+  - name: fileStreamDirectory
+    type: string
+
   - name: x64AliasRegistryPath
     type: string
     default: $(x64AliasRegistryPath)
@@ -149,6 +152,13 @@ steps:
   env:
     SQL_USER: ${{parameters.user }}
     SQL_PASSWD: ${{parameters.password }}
+
+- pwsh: |
+    New-Item -Path ${{ parameters.fileStreamDirectory }} -ItemType Directory
+  displayName: 'Create FileStreamFolder'
+  retryCountOnTaskFailure: 1
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
+  continueOnError: true
 
 - powershell: |
     $SQLServerName = ("{0}" -f [System.Net.Dns]::GetHostByName($env:computerName).HostName)

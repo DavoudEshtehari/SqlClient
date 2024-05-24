@@ -111,12 +111,6 @@ jobs:
         ${{ if parameters.configProperties.ManagedIdentitySupported }}:
           ManagedIdentitySupported: ${{ eq(parameters.configProperties.ManagedIdentitySupported, 'true') }}
 
-    - pwsh: |
-        New-Item -Path ${{ parameters.configProperties.FileStreamDirectory }} -ItemType Directory
-      displayName: 'Create FileStreamFolder'
-      retryCountOnTaskFailure: 1
-      continueOnError: true
-
     - template: ../steps/configure-sql-server-step.yml
       parameters:
         ${{ if parameters.configProperties.instanceName }}:
@@ -147,3 +141,5 @@ jobs:
           LocalDbAppName: ${{ parameters.configProperties.localDbAppName }}
         ${{ if parameters.configProperties.localDbSharedInstanceName }}:
           LocalDbSharedInstanceName: ${{ parameters.configProperties.localDbSharedInstanceName }}
+        ${{ if parameters.configProperties.FileStreamDirectory }}:
+          fileStreamDirectory: ${{ parameters.configProperties.FileStreamDirectory }}
