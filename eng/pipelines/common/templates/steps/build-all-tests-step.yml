@@ -1,0 +1,64 @@
+#################################################################################
+# Licensed to the .NET Foundation under one or more agreements.                 #
+# The .NET Foundation licenses this file to you under the MIT license.          #
+# See the LICENSE file in the project root for more information.                #
+#################################################################################
+parameters:
+  - name: targetFramework
+    type: string
+
+  - name: nugetPackageVersion
+    type: string
+    default: $(NugetPackageVersion)
+
+  - name: platform
+    type: string
+    default: $(Platform)
+  
+  - name: configuration
+    type: string
+    default: '$(Configuration)'
+
+  - name: referenceType
+    default: Package
+    values:
+      - Project
+      - Package
+  
+  - name: OSGroup
+    type: string
+    default: ''
+
+steps:
+- ${{ if contains(parameters.targetFramework, 'net4') }}: # .NET Framework
+  - task: MSBuild@1
+    displayName: 'Build Tests NetFx'
+    inputs:
+      solution: build.proj
+      platform: '${{parameters.platform }}'
+      configuration: '${{parameters.configuration }}'
+      msbuildArguments: '-t:BuildTestsNetFx -p:TF=${{parameters.targetFramework }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+    condition: and(succeeded(), startsWith(variables['TF'], 'net4'))
+
+# - ${{else if contains(parameters.targetFramework, 'netstandard')}}: # .NET Standard
+#   - task: MSBuild@1
+#     displayName: 'Build Tests NetStandard'
+#     inputs:
+#       solution: build.proj
+#       platform: '${{parameters.platform }}'
+#       configuration: '${{parameters.configuration }}'
+#       msbuildArguments: '-t:BuildTestsNetCore -p:ReferenceType=NetStandard -p:TargetNetStandardVersion=${{parameters.targetNetStandardVersion }} -p:TF=${{parameters.targetFramework }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+#     condition: and(succeeded(), not(startsWith(variables['TF'], 'net4')), startsWith(variables['TargetNetStandardVersion'], 'netstandard'))
+
+- ${{else}}: # .NET
+  - task: MSBuild@1
+    displayName: 'Build Tests NetCore'
+    inputs:
+      solution: build.proj
+      platform: '${{parameters.platform }}'
+      configuration: '${{parameters.configuration }}'
+      ${{ if eq(parameters.OSGroup, '') }}:
+        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+      ${{ else }}:
+        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:OSGroup=${{parameters.OSGroup }}'
+    condition: and(succeeded(), not(startsWith(variables['TF'], 'net4')))

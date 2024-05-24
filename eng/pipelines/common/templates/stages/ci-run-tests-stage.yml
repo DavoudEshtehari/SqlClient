@@ -41,6 +41,7 @@ stages:
                       jobDisplayName: ${{ format('{0}_{1}_{2}', replace(targetFramework, '.', '_'), platform, testSet) }}
                       configProperties: ${{ config.value.configProperties }}
                       prebuildSteps: ${{ parameters.prebuildSteps }}
+                      targetFramework: ${{ targetFramework }}
                 - ${{ else }}: # .NET
                   - ${{ each useManagedSNI in config.value.useManagedSNIOnWindows }}:
                     - template: ../jobs/ci-run-tests-job.yml
@@ -52,3 +53,4 @@ stages:
                         configProperties: ${{ config.value.configProperties }}
                         useManagedSNI: ${{ useManagedSNI }}
                         prebuildSteps: ${{ parameters.prebuildSteps }}                  
+                        targetFramework: ${{ targetFramework }}
