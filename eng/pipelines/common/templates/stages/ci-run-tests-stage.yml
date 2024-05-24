@@ -42,6 +42,7 @@ stages:
                       configProperties: ${{ config.value.configProperties }}
                       prebuildSteps: ${{ parameters.prebuildSteps }}
                       targetFramework: ${{ targetFramework }}
+                      testSet: ${{ testSet }}
                 - ${{ else }}: # .NET
                   - ${{ each useManagedSNI in config.value.useManagedSNIOnWindows }}:
                     - template: ../jobs/ci-run-tests-job.yml
@@ -57,3 +58,4 @@ stages:
                         useManagedSNI: ${{ useManagedSNI }}
                         prebuildSteps: ${{ parameters.prebuildSteps }}                  
                         targetFramework: ${{ targetFramework }}
+                        testSet: ${{ testSet }}

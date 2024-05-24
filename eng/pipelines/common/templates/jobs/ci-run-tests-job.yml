@@ -34,8 +34,11 @@ parameters:
   - name: artifactName
     type: string
     default: Artifacts
-  
+
   - name: targetFramework
+    type: string
+
+  - name: testSet
     type: string
 
 jobs:
@@ -151,3 +154,10 @@ jobs:
       parameters:
         targetFramework: ${{ parameters.targetFramework }}
         referenceType: Package
+
+    - template: ../steps/run-all-tests-step.yml
+      parameters:
+        debug: ${{ parameters.debug }}
+        targetFramework: ${{ parameters.targetFramework }}
+        referenceType: Package
+        testSet: ${{ parameters.testSet }}
