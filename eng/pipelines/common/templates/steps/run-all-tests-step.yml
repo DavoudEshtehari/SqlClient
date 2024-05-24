@@ -46,6 +46,16 @@ steps:
     platform: '${{parameters.platform }}'
     configuration: '${{parameters.configuration }}'
     msbuildArguments: '-t:RunFunctionalTests -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
-  retryCountOnTaskFailure: 3
+  condition: succeeded()
+  retryCountOnTaskFailure: 1
 
-
+- task: MSBuild@1
+  displayName: 'Run Manual Tests ${{parameters.targetFramework }}'
+  inputs:
+    solution: build.proj
+    msbuildArchitecture: x64
+    platform: '${{parameters.platform }}'
+    configuration: '${{parameters.configuration }}'
+    msbuildArguments: '-t:RunManualTests -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+  condition: succeeded()
+  retryCountOnTaskFailure: 2
