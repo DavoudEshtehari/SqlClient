@@ -154,6 +154,7 @@ jobs:
       parameters:
         targetFramework: ${{ parameters.targetFramework }}
         referenceType: Package
+        testSet: ${{ parameters.testSet }}
 
     - template: ../steps/run-all-tests-step.yml
       parameters:

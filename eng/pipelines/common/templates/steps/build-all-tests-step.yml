@@ -29,6 +29,9 @@ parameters:
     type: string
     default: ''
 
+  - name: testSet
+    type: string
+
 steps:
 - ${{ if contains(parameters.targetFramework, 'net4') }}: # .NET Framework
   - task: MSBuild@1
@@ -37,7 +40,7 @@ steps:
       solution: build.proj
       platform: '${{parameters.platform }}'
       configuration: '${{parameters.configuration }}'
-      msbuildArguments: '-t:BuildTestsNetFx -p:TF=${{parameters.targetFramework }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+      msbuildArguments: '-t:BuildTestsNetFx -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
 
 # - ${{else if contains(parameters.targetFramework, 'netstandard')}}: # .NET Standard
 #   - task: MSBuild@1
@@ -57,6 +60,6 @@ steps:
       platform: '${{parameters.platform }}'
       configuration: '${{parameters.configuration }}'
       ${{ if eq(parameters.OSGroup, '') }}:
-        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
       ${{ else }}:
-        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:OSGroup=${{parameters.OSGroup }}'
+        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:OSGroup=${{parameters.OSGroup }}'
