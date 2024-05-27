@@ -43,6 +43,10 @@ stages:
                       prebuildSteps: ${{ parameters.prebuildSteps }}
                       targetFramework: ${{ targetFramework }}
                       testSet: ${{ testSet }}
+                      ${{if ne(config.value.configProperties, '{}') }}:
+                        ${{ each x86TF in config.value.configProperties.x86TestTargetFrameworks }}:
+                          ${{ if eq(x86TF, targetFramework) }}:
+                            enableX86Test: true
                 - ${{ else }}: # .NET
                   - ${{ each useManagedSNI in config.value.useManagedSNIOnWindows }}:
                     - template: ../jobs/ci-run-tests-job.yml
@@ -59,3 +63,7 @@ stages:
                         prebuildSteps: ${{ parameters.prebuildSteps }}                  
                         targetFramework: ${{ targetFramework }}
                         testSet: ${{ testSet }}
+                        ${{if ne(config.value.configProperties, '{}') }}:
+                          ${{ each x86TF in config.value.configProperties.x86TestTargetFrameworks }}:
+                            ${{ if eq(x86TF, targetFramework) }}:
+                              enableX86Test: true

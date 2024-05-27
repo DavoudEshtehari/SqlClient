@@ -38,6 +38,10 @@ parameters:
   - name: targetFramework
     type: string
 
+  - name: enableX86Test
+    type: boolean
+    default: false
+
   - name: testSet
     type: string
 
@@ -49,6 +53,10 @@ jobs:
     name: ${{parameters.poolName }}
     demands:
     - imageOverride -equals ${{ parameters.imageOverride }}
+
+  variables:
+    - name: dotnetx86RootPath
+      value: '$(dotnetx86Path)'
 
   steps:
   - ${{ if ne(parameters.prebuildSteps, '') }}:
@@ -162,3 +170,31 @@ jobs:
         targetFramework: ${{ parameters.targetFramework }}
         referenceType: Package
         testSet: ${{ parameters.testSet }}
+  
+  - ${{ if eq(parameters.enableX86Test, true) }}: # run x86 tests
+    - pwsh: |
+        dotnet --info
+        
+        Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
+        
+        # install .net x86
+        $version = "LTS"
+        if (!"${{parameters.targetFramework }}".StartsWith("net4"))
+        {
+            $version = "${{parameters.targetFramework }}".Substring(3, "${{parameters.targetFramework }}".Length-3)
+        }
+        
+        .\dotnet-install.ps1 -Channel $version -Architecture x86 -InstallDir "$(dotnetx86RootPath)"
+        
+        $(dotnetx86RootPath)dotnet.exe --info
+      displayName: 'Install .NET x86 '
+      condition: ne(variables['dotnetx86RootPath'], '')
+  
+    - template: ../steps/run-all-tests-step.yml
+      parameters:
+        debug: ${{ parameters.debug }}
+        targetFramework: ${{ parameters.targetFramework }}
+        referenceType: Package
+        testSet: ${{ parameters.testSet }}
+        msbuildArchitecture: x86
+        dotnetx86RootPath: $(dotnetx86RootPath)

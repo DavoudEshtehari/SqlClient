@@ -32,6 +32,16 @@ parameters:
   - name: testSet
     type: string
 
+  - name: msbuildArchitecture
+    default: x64
+    values:
+      - x64
+      - x86
+  
+  - name: dotnetx86RootPath # full path to the x86 dotnet root folder with trailing slash
+    type: string
+    default: ''
+
 steps:
 - ${{ if parameters.debug }}:
   - powershell: 'dotnet sdk check'
@@ -39,23 +49,29 @@ steps:
     condition: succeededOrFailed()
 
 - task: MSBuild@1
-  displayName: 'Run Functional Tests ${{parameters.targetFramework }}'
+  displayName: 'Run Functional Tests ${{parameters.msbuildArchitecture }}'
   inputs:
     solution: build.proj
-    msbuildArchitecture: x64
+    msbuildArchitecture: ${{parameters.msbuildArchitecture }}
     platform: '${{parameters.platform }}'
     configuration: '${{parameters.configuration }}'
-    msbuildArguments: '-t:RunFunctionalTests -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+    ${{ if eq(parameters.msbuildArchitecture, 'x64') }}:      
+      msbuildArguments: '-t:RunFunctionalTests -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+    ${{ else }}: # x86
+      msbuildArguments: '-t:RunFunctionalTests -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:DotnetPath=${{parameters.dotnetx86RootPath }}'
   condition: succeeded()
   retryCountOnTaskFailure: 1
 
 - task: MSBuild@1
-  displayName: 'Run Manual Tests ${{parameters.targetFramework }}'
+  displayName: 'Run Manual Tests ${{parameters.msbuildArchitecture }}'
   inputs:
     solution: build.proj
-    msbuildArchitecture: x64
+    msbuildArchitecture: ${{parameters.msbuildArchitecture }}
     platform: '${{parameters.platform }}'
     configuration: '${{parameters.configuration }}'
-    msbuildArguments: '-t:RunManualTests -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+    ${{ if eq(parameters.msbuildArchitecture, 'x64') }}:
+      msbuildArguments: '-t:RunManualTests -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+    ${{ else }}: # x86
+      msbuildArguments: '-t:RunManualTests -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:DotnetPath=${{parameters.dotnetx86RootPath }}'
   condition: succeeded()
   retryCountOnTaskFailure: 2
