@@ -43,6 +43,7 @@ stages:
                       prebuildSteps: ${{ parameters.prebuildSteps }}
                       targetFramework: ${{ targetFramework }}
                       testSet: ${{ testSet }}
+                      publishTestResults: ${{ config.value.publishTestResults }}
                       ${{if ne(config.value.configProperties, '{}') }}:
                         ${{ each x86TF in config.value.configProperties.x86TestTargetFrameworks }}:
                           ${{ if eq(x86TF, targetFramework) }}:
@@ -63,6 +64,7 @@ stages:
                         prebuildSteps: ${{ parameters.prebuildSteps }}                  
                         targetFramework: ${{ targetFramework }}
                         testSet: ${{ testSet }}
+                        publishTestResults: ${{ config.value.publishTestResults }}
                         ${{if and(eq(usemanagedSNI, false), ne(config.value.configProperties, '{}')) }}:
                           ${{ each x86TF in config.value.configProperties.x86TestTargetFrameworks }}:
                             ${{ if eq(x86TF, targetFramework) }}:

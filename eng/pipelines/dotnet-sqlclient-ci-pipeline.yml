@@ -71,6 +71,7 @@ stages:
           buildPlatforms: [AnyCPU]
           testSets: [1] # [1, 2, 3] # list of test sets to run
           useManagedSNIOnWindows: [false, true] # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
+          publishTestResults: true
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_CONN_STRING)

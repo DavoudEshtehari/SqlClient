@@ -44,6 +44,10 @@ parameters:
 
   - name: testSet
     type: string
+  
+  - name: publishTestResults
+    type: boolean
+    default: true
 
 jobs:
 - job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, 'unknown_image')) }}
@@ -199,6 +203,7 @@ jobs:
         msbuildArchitecture: x86
         dotnetx86RootPath: $(dotnetx86RootPath)
 
-  - template: ../steps/publish-test-results-step.yml
-    parameters:
-      targetFramework: ${{ parameters.targetFramework }}
+  - ${{ if eq(parameters.publishTestResults, true) }}:
+    - template: ../steps/publish-test-results-step.yml
+      parameters:
+        targetFramework: ${{ parameters.targetFramework }}  
