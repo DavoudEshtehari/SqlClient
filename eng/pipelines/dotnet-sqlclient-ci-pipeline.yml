@@ -63,14 +63,14 @@ stages:
       debug: ${{ parameters.debug }}
 
       testConfigurations:
-        windows_sql_19:
-          pool: $(defaultPoolName)
-          images:
-            Windows22_Sql19: ADO-MMS22-SQL19
-          TargetFrameworks: [net462, net6.0] #[net462, net6.0, net8.0]
+        windows_sql_19: # configuration name
+          pool: $(defaultPoolName) # pool name
+          images: # list of images to run tests on
+            Windows22_Sql19: ADO-MMS22-SQL19 # image display name: image name from the pool
+          TargetFrameworks: [net462, net6.0] #[net462, net6.0, net8.0] # list of target frameworks to run
           buildPlatforms: [AnyCPU]
-          testSets: [1] # [1, 2, 3]
-          useManagedSNIOnWindows: [false, true]
+          testSets: [1] # [1, 2, 3] # list of test sets to run
+          useManagedSNIOnWindows: [false, true] # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_CONN_STRING)
@@ -90,7 +90,7 @@ stages:
             # extra config properties
             SQLRootPath: $(SQL19RootPath)
             enableLocalDB: true
-            x86TestTargetFrameworks: [net6.0]
+            x86TestTargetFrameworks: [net6.0] # target frameworks should run tests on x86 as well
 
       prebuildSteps:
       - script: SET
