@@ -90,7 +90,7 @@ stages:
             # extra config properties
             SQLRootPath: $(SQL19RootPath)
             enableLocalDB: true
-            x86TestTargetFrameworks: [net462]
+            x86TestTargetFrameworks: [net6.0]
 
       prebuildSteps:
       - script: SET
