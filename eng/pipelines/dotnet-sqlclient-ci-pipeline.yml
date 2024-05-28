@@ -87,6 +87,39 @@ stages:
       # dependsOn: 'build'
       debug: ${{ parameters.debug }}
 
+      # steps to run prior to building and running tests
+      prebuildSteps:
+      # - template: common/templates/steps/ci-prebuild-step.yml
+      #   parameters:
+      #     debug: ${{ parameters.debug }}
+      #     artifactName: $(artifactName)
+
+      # temporary steps
+      - script: SET
+        displayName: 'Print Environment Variables'
+      # - task: DownloadPipelineArtifact@2
+      #   displayName: 'Download NuGet Package'
+      #   inputs:
+      #     buildType: current
+      #     artifact: $(artifactName)
+      #     patterns: '**/*.nupkg'
+      #     targetPath: $(Pipeline.Workspace)/$(artifactName)
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download NuGet Package'
+        inputs:
+          buildType: specific
+          project: 'ADO.Net'
+          definition: 1831 # test-Davoud, #1825: self 
+          artifact: $(artifactName)
+          patterns: '**/*.nupkg'
+          targetPath: $(Pipeline.Workspace)/$(artifactName)
+      
+      - template: common/templates/steps/update-nuget-config-local-feed-step.yml
+        parameters:
+          downloadedNugetPath: $(Pipeline.Workspace)\$(artifactName)
+          debug: ${{ parameters.debug }}
+
+      # test stages configurations
       testConfigurations:
         windows_sql_19: # configuration name
           pool: $(defaultPoolName) # pool name
@@ -131,15 +164,15 @@ stages:
             # localDbAppName: default: $(LocalDbAppName)
             # localDbSharedInstanceName: default: $(LocalDbSharedInstanceName)
 
-        windows_sql_22: # configuration name
-          pool: $(defaultPoolName) # pool name
-          images: # list of images to run tests on
-            Win22_Sql22: ADO-MMS22-SQL22 # stage display name: image name from the pool
-          TargetFrameworks: ${{parameters.targetFrameworks }} #[net462, net6.0, net8.0] # list of target frameworks to run
+        windows_sql_22: 
+          pool: $(defaultPoolName)
+          images:
+            Win22_Sql22: ADO-MMS22-SQL22 
+          TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
-          testSets: ${{parameters.testSets }} # [1, 2, 3] # list of test sets to run
-          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }} # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
-          publishTestResults: ${{parameters.publishTestResults }} # publish test results to pipeline
+          testSets: ${{parameters.testSets }}
+          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          publishTestResults: ${{parameters.publishTestResults }}
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_CONN_STRING)
@@ -161,15 +194,15 @@ stages:
             SQLRootPath: $(SQL22RootPath)
             enableLocalDB: true
 
-        windows_sql_22_named_instance: # configuration name
-          pool: $(defaultPoolName) # pool name
-          images: # list of images to run tests on
-            Win22_Sql22_named_instance: ADO-MMS22-SQL22-WITH-NAMED-INSTANCE # stage display name: image name from the pool
-          TargetFrameworks: ${{parameters.targetFrameworks }} # list of target frameworks to run
+        windows_sql_22_named_instance:
+          pool: $(defaultPoolName)
+          images:
+            Win22_Sql22_named_instance: ADO-MMS22-SQL22-WITH-NAMED-INSTANCE
+          TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
-          testSets: ${{parameters.testSets }} # list of test sets to run
-          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }} # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
-          publishTestResults: ${{parameters.publishTestResults }} # publish test results to pipeline
+          testSets: ${{parameters.testSets }}
+          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          publishTestResults: ${{parameters.publishTestResults }}
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_INSTANCE_CONN_STRING)
@@ -179,33 +212,26 @@ stages:
             SQLRootPath: $(SQL22RootPath)
             instanceName: $(NamedInstance)
 
-      prebuildSteps: # steps to run prior to building and running tests
-      # - template: common/templates/steps/ci-prebuild-step.yml
-      #   parameters:
-      #     debug: ${{ parameters.debug }}
-      #     artifactName: $(artifactName)
-
-      # temporary steps
-      - script: SET
-        displayName: 'Print Environment Variables'
-      # - task: DownloadPipelineArtifact@2
-      #   displayName: 'Download NuGet Package'
-      #   inputs:
-      #     buildType: current
-      #     artifact: $(artifactName)
-      #     patterns: '**/*.nupkg'
-      #     targetPath: $(Pipeline.Workspace)/$(artifactName)
-      - task: DownloadPipelineArtifact@2
-        displayName: 'Download NuGet Package'
-        inputs:
-          buildType: specific
-          project: 'ADO.Net'
-          definition: 1831 # test-Davoud, #1825: self 
-          artifact: $(artifactName)
-          patterns: '**/*.nupkg'
-          targetPath: $(Pipeline.Workspace)/$(artifactName)
-      
-      - template: common/templates/steps/update-nuget-config-local-feed-step.yml
-        parameters:
-          downloadedNugetPath: $(Pipeline.Workspace)\$(artifactName)
-          debug: ${{ parameters.debug }}
+        windows_azure_sql:
+          pool: $(defaultPoolName) 
+          images: 
+            Win22_Azure_Sql: ADO-MMS22-SQL19
+          TargetFrameworks: ${{parameters.targetFrameworks }}
+          buildPlatforms: ${{parameters.buildPlatforms }}
+          testSets: ${{parameters.testSets }}
+          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          publishTestResults: ${{parameters.publishTestResults }}
+          configProperties:
+            # config.json properties
+            TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING)
+            NPConnectionString: $(AZURE_DB_NP_CONN_STRING)
+            AADAuthorityURL: $(AADAuthorityURL)
+            AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR)
+            AADServicePrincipalId: $(AADServicePrincipalId)
+            AADServicePrincipalSecret: $(AADServicePrincipalSecret)
+            AzureKeyVaultUrl: $(AzureKeyVaultUrl)
+            AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
+            SupportsIntegratedSecurity: false
+            UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+            LocalDbAppName: $(LocalDbAppName)
+            LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
