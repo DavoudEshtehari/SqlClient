@@ -93,6 +93,36 @@ stages:
             enableLocalDB: true
             x86TestTargetFrameworks: [net6.0] # target frameworks should run tests on x86 as well
 
+        windows_sql_22: # configuration name
+          pool: $(defaultPoolName) # pool name
+          images: # list of images to run tests on
+            Windows22_Sql22: ADO-MMS22-SQL22 # image display name: image name from the pool
+          TargetFrameworks: [net462, net6.0] #[net462, net6.0, net8.0] # list of target frameworks to run
+          buildPlatforms: [AnyCPU]
+          testSets: [2] # [1, 2, 3] # list of test sets to run
+          useManagedSNIOnWindows: [false] # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
+          publishTestResults: true # publish test results to pipeline
+          configProperties:
+            # config.json properties
+            TCPConnectionString: $(SQL_TCP_CONN_STRING)
+            NPConnectionString: $(SQL_NP_CONN_STRING)
+            AADAuthorityURL: $(AADAuthorityURL)
+            AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR)
+            AADServicePrincipalId: $(AADServicePrincipalId)
+            AADServicePrincipalSecret: $(AADServicePrincipalSecret)
+            AzureKeyVaultUrl: $(AzureKeyVaultUrl)
+            AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
+            SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
+            UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+            FileStreamDirectory: $(FileStreamDirectory)
+            LocalDbAppName: $(LocalDbAppName)
+            LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
+            AliasName: $(SQLAliasName)
+            # extra config properties
+            SQLRootPath: $(SQL22RootPath)
+            enableLocalDB: true
+            x86TestTargetFrameworks: [net462] # target frameworks should run tests on x86 as well
+
       prebuildSteps: # steps to run prior to building and running tests
       # - template: common/templates/steps/ci-prebuild-step.yml
       #   parameters:
