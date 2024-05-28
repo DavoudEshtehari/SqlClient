@@ -71,7 +71,7 @@ stages:
           buildPlatforms: [AnyCPU]
           testSets: [1] # [1, 2, 3] # list of test sets to run
           useManagedSNIOnWindows: [false, true] # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
-          publishTestResults: true
+          publishTestResults: true # publish test results to pipeline
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_CONN_STRING)
@@ -93,7 +93,13 @@ stages:
             enableLocalDB: true
             x86TestTargetFrameworks: [net6.0] # target frameworks should run tests on x86 as well
 
-      prebuildSteps:
+      prebuildSteps: # steps to run prior to building and running tests
+      # - template: common/templates/steps/ci-prebuild-step.yml
+      #   parameters:
+      #     debug: ${{ parameters.debug }}
+      #     artifactName: $(artifactName)
+
+      # temporary steps
       - script: SET
         displayName: 'Print Environment Variables'
       # - task: DownloadPipelineArtifact@2
@@ -112,6 +118,7 @@ stages:
           artifact: $(artifactName)
           patterns: '**/*.nupkg'
           targetPath: $(Pipeline.Workspace)/$(artifactName)
+      
       - template: common/templates/steps/update-nuget-config-local-feed-step.yml
         parameters:
           downloadedNugetPath: $(Pipeline.Workspace)\$(artifactName)

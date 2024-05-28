@@ -1,0 +1,30 @@
+#################################################################################
+# Licensed to the .NET Foundation under one or more agreements.                 #
+# The .NET Foundation licenses this file to you under the MIT license.          #
+# See the LICENSE file in the project root for more information.                #
+#################################################################################
+parameters:
+  - name: debug
+    type: boolean
+    default: false
+
+  - name: artifactName
+    type: string
+    default: Artifacts
+
+steps:
+- script: SET
+  displayName: 'Print Environment Variables'
+
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download NuGet Package'
+  inputs:
+    buildType: current
+    artifact: ${{parameters.artifactName }}
+    patterns: '**/*.nupkg'
+    targetPath: $(Pipeline.Workspace)/${{parameters.artifactName }}
+
+- template: update-nuget-config-local-feed-step.yml
+  parameters:
+    downloadedNugetPath: $(Pipeline.Workspace)\${{parameters.artifactName }}
+    debug: ${{ parameters.debug }}
