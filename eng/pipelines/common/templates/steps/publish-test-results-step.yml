@@ -21,8 +21,8 @@ steps:
   inputs:
     testResultsFormat: VSTest
     testResultsFiles: 'TestResults/*.trx'
-    testRunTitle: 'Windows Tests'
     mergeTestResults: true
+    testRunTitle: 'Windows Tests'
     buildPlatform: '${{parameters.platform }}'
     buildConfiguration: '${{parameters.configuration }}'
   condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Windows_NT'))
@@ -38,7 +38,7 @@ steps:
     testRunTitle: 'Linux Tests'
     buildPlatform: '${{parameters.platform }}'
     buildConfiguration: '${{parameters.configuration }}'
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Windows_NT'))
 
 - pwsh: |
    cd TestResults
