@@ -119,7 +119,8 @@ stages:
           downloadedNugetPath: $(Pipeline.Workspace)\$(artifactName)
           debug: ${{ parameters.debug }}
 
-      # test stages configurations
+# test stages configurations
+  # self hosted SQL Server on Windows
       testConfigurations:
         windows_sql_19: # configuration name
           pool: $(defaultPoolName) # pool name
@@ -212,6 +213,7 @@ stages:
             SQLRootPath: $(SQL22RootPath)
             instanceName: $(NamedInstance)
 
+    # Azure SQL Server
         windows_azure_sql:
           pool: $(defaultPoolName) 
           images: 
@@ -233,5 +235,29 @@ stages:
             AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
             SupportsIntegratedSecurity: false
             UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+            LocalDbAppName: $(LocalDbAppName)
+            LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
+
+        windows_azure_arm64_sql:
+          pool: ADO-CI-PUBLIC-ARM64-1ES-EUS2-POOL
+          images: 
+            Win22_Azure_ARM64_Sql: ADO-WIN11-ARM64
+          TargetFrameworks: ${{parameters.targetFrameworks }}
+          buildPlatforms: ${{parameters.buildPlatforms }}
+          testSets: ${{parameters.testSets }}
+          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          publishTestResults: ${{parameters.publishTestResults }}
+          configProperties:
+            # config.json properties
+            TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING_eastus)
+            NPConnectionString: $(AZURE_DB_NP_CONN_STRING_eastus)
+            AADAuthorityURL: $(AADAuthorityURL)
+            AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR_eastus)
+            AADServicePrincipalId: $(AADServicePrincipalId)
+            AADServicePrincipalSecret: $(AADServicePrincipalSecret)
+            AzureKeyVaultUrl: $(AzureKeyVaultUrl)
+            AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
+            SupportsIntegratedSecurity: false
+            UserManagedIdentityClientId: $(UserManagedIdentityClientId_eastus)
             LocalDbAppName: $(LocalDbAppName)
             LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
