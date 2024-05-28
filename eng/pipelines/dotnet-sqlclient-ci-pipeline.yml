@@ -86,7 +86,7 @@ stages:
         windows_sql_19: # configuration name
           pool: $(defaultPoolName) # pool name
           images: # list of images to run tests on
-            Windows22_Sql19: ADO-MMS22-SQL19 # stage display name: image name from the pool
+            Win22_Sql19: ADO-MMS22-SQL19 # stage display name: image name from the pool
           TargetFrameworks: [net462, net6.0] #[net462, net6.0, net8.0] # list of target frameworks to run
           buildPlatforms: [AnyCPU]
           testSets: [1] # [1, 2, 3] # list of test sets to run
@@ -109,14 +109,27 @@ stages:
             LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
             AliasName: $(SQLAliasName)
             # extra config properties
+            x86TestTargetFrameworks: [net6.0] # target frameworks should run tests on x86 as well
             SQLRootPath: $(SQL19RootPath)
             enableLocalDB: true
-            x86TestTargetFrameworks: [net6.0] # target frameworks should run tests on x86 as well
+            # instanceName: default: MSSQLSERVER
+            # user: default: $(user)
+            # saUser: default: $(saUser)
+            # password: default: $(password)
+            # fileStreamDirectory: default: ''
+            # x64AliasRegistryPath: default: $(x64AliasRegistryPath)
+            # x86AliasRegistryPath: default: $(x86AliasRegistryPath)
+            # SQLAliasName: default: $(SQLAliasName)
+            # SQLAliasPort: default: $(SQLAliasPort)
+            # targetNetCoreVersion: default: $(MainTargetNetCoreVersion)
+            # databaseName: default: Northwind
+            # localDbAppName: default: $(LocalDbAppName)
+            # localDbSharedInstanceName: default: $(LocalDbSharedInstanceName)
 
         windows_sql_22: # configuration name
           pool: $(defaultPoolName) # pool name
           images: # list of images to run tests on
-            Windows22_Sql22: ADO-MMS22-SQL22 # stage display name: image name from the pool
+            Win22_Sql22: ADO-MMS22-SQL22 # stage display name: image name from the pool
           TargetFrameworks: [net462, net6.0] #[net462, net6.0, net8.0] # list of target frameworks to run
           buildPlatforms: [AnyCPU]
           testSets: [2] # [1, 2, 3] # list of test sets to run
@@ -139,14 +152,14 @@ stages:
             LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
             AliasName: $(SQLAliasName)
             # extra config properties
+            x86TestTargetFrameworks: [net462] # target frameworks should run tests on x86 as well
             SQLRootPath: $(SQL22RootPath)
             enableLocalDB: true
-            x86TestTargetFrameworks: [net462] # target frameworks should run tests on x86 as well
 
         windows_sql_22_named_instance: # configuration name
           pool: $(defaultPoolName) # pool name
           images: # list of images to run tests on
-            Windows22_Sql22_named_instance: ADO-MMS22-SQL22-WITH-NAMED-INSTANCE # stage display name: image name from the pool
+            Win22_Sql22_named_instance: ADO-MMS22-SQL22-WITH-NAMED-INSTANCE # stage display name: image name from the pool
           TargetFrameworks: ${{parameters.targetFrameworks }} # list of target frameworks to run
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }} # list of test sets to run
@@ -159,6 +172,7 @@ stages:
             SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
             # extra config properties
             SQLRootPath: $(SQL22RootPath)
+            instanceName: $(NamedInstance)
 
       prebuildSteps: # steps to run prior to building and running tests
       # - template: common/templates/steps/ci-prebuild-step.yml
