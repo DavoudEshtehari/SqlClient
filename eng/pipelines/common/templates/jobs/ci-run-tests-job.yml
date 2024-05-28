@@ -67,7 +67,7 @@ jobs:
     - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
   - ${{ if ne(parameters.configProperties, '{}') }}:
-    - template: ../steps/update-config-file-step.yml
+    - template: ../steps/update-config-file-step.yml # update config.json file
       parameters:
         debug: ${{ parameters.debug }}
         ${{ if parameters.configProperties.TCPConnectionString }}:
@@ -129,7 +129,7 @@ jobs:
         ${{ if parameters.configProperties.ManagedIdentitySupported }}:
           ManagedIdentitySupported: ${{ eq(parameters.configProperties.ManagedIdentitySupported, 'true') }}
 
-    - template: ../steps/configure-sql-server-step.yml
+    - template: ../steps/configure-sql-server-step.yml # configure SQL Server
       parameters:
         ${{ if parameters.configProperties.instanceName }}:
           instanceName: ${{ parameters.configProperties.instanceName }}
@@ -162,13 +162,13 @@ jobs:
         ${{ if parameters.configProperties.FileStreamDirectory }}:
           fileStreamDirectory: ${{ parameters.configProperties.FileStreamDirectory }}
 
-    - template: ../steps/build-all-tests-step.yml 
+    - template: ../steps/build-all-tests-step.yml # build tests
       parameters:
         targetFramework: ${{ parameters.targetFramework }}
         referenceType: Package
         testSet: ${{ parameters.testSet }}
 
-    - template: ../steps/run-all-tests-step.yml
+    - template: ../steps/run-all-tests-step.yml # run tests
       parameters:
         debug: ${{ parameters.debug }}
         targetFramework: ${{ parameters.targetFramework }}
@@ -203,7 +203,7 @@ jobs:
         msbuildArchitecture: x86
         dotnetx86RootPath: $(dotnetx86RootPath)
 
-  - ${{ if eq(parameters.publishTestResults, true) }}:
+  - ${{ if eq(parameters.publishTestResults, true) }}: # publish test results
     - template: ../steps/publish-test-results-step.yml
       parameters:
         targetFramework: ${{ parameters.targetFramework }}  

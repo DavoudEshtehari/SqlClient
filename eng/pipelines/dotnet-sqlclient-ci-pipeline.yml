@@ -40,6 +40,26 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: boolean
   default: false
 
+- name: targetFrameworks
+  displayName: 'Target Frameworks'
+  type: object
+  default: [net462, net6.0, net8.0]
+
+- name: buildPlatforms
+  displayName: 'Build Platforms'
+  type: object
+  default: [AnyCPU]
+
+- name: testSets
+  displayName: 'Test Sets'
+  type: object
+  default: [1, 2, 3]
+
+- name: useManagedSNIOnWindows
+  displayName: 'Use Managed SNI on Windows'
+  type: object
+  default: [false, true]
+
 variables:
   - template: libraries/ci-build-variables.yml
 
@@ -66,7 +86,7 @@ stages:
         windows_sql_19: # configuration name
           pool: $(defaultPoolName) # pool name
           images: # list of images to run tests on
-            Windows22_Sql19: ADO-MMS22-SQL19 # image display name: image name from the pool
+            Windows22_Sql19: ADO-MMS22-SQL19 # stage display name: image name from the pool
           TargetFrameworks: [net462, net6.0] #[net462, net6.0, net8.0] # list of target frameworks to run
           buildPlatforms: [AnyCPU]
           testSets: [1] # [1, 2, 3] # list of test sets to run
@@ -96,7 +116,7 @@ stages:
         windows_sql_22: # configuration name
           pool: $(defaultPoolName) # pool name
           images: # list of images to run tests on
-            Windows22_Sql22: ADO-MMS22-SQL22 # image display name: image name from the pool
+            Windows22_Sql22: ADO-MMS22-SQL22 # stage display name: image name from the pool
           TargetFrameworks: [net462, net6.0] #[net462, net6.0, net8.0] # list of target frameworks to run
           buildPlatforms: [AnyCPU]
           testSets: [2] # [1, 2, 3] # list of test sets to run
@@ -122,6 +142,23 @@ stages:
             SQLRootPath: $(SQL22RootPath)
             enableLocalDB: true
             x86TestTargetFrameworks: [net462] # target frameworks should run tests on x86 as well
+
+        windows_sql_22_named_instance: # configuration name
+          pool: $(defaultPoolName) # pool name
+          images: # list of images to run tests on
+            Windows22_Sql22_named_instance: ADO-MMS22-SQL22-WITH-NAMED-INSTANCE # stage display name: image name from the pool
+          TargetFrameworks: ${{parameters.targetFrameworks }} # list of target frameworks to run
+          buildPlatforms: ${{parameters.buildPlatforms }}
+          testSets: ${{parameters.testSets }} # list of test sets to run
+          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows}} # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
+          publishTestResults: true # publish test results to pipeline
+          configProperties:
+            # config.json properties
+            TCPConnectionString: $(SQL_TCP_INSTANCE_CONN_STRING)
+            NPConnectionString: $(SQL_NP_INSTANCE_CONN_STRING)
+            SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
+            # extra config properties
+            SQLRootPath: $(SQL22RootPath)
 
       prebuildSteps: # steps to run prior to building and running tests
       # - template: common/templates/steps/ci-prebuild-step.yml
