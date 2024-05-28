@@ -22,6 +22,7 @@ parameters:
 
   - name: SQLRootPath
     type: string
+    default: ''
 
   - name: fileStreamDirectory
     type: string
@@ -129,30 +130,31 @@ steps:
     SQL_USER: ${{parameters.user }}
     SQL_PASSWD: ${{parameters.password }}
 
-- powershell: |
-    #Enable FileStream
-    $instance = "${{parameters.instanceName }}"
-    $wmi = Get-WmiObject -Namespace "${{parameters.SQLRootPath }}" -Class FilestreamSettings | where {$_.InstanceName -eq $instance}
-    $wmi.EnableFilestream(3, $instance)
-    
-    $machineName = $env:COMPUTERNAME
-    
-    if ("${{parameters.instanceName }}" -ne "MSSQLSERVER"){
-      $machineName += "\${{parameters.instanceName }}"
-    }
-    
-    #Change the access level for FileStream for SQLServer
-    Set-ExecutionPolicy Unrestricted
-    Import-Module "sqlps"
-    Invoke-Sqlcmd -ServerInstance "$machineName" @"
-        EXEC sp_configure filestream_access_level, 2;
-        RECONFIGURE;
-    "@
-  displayName: 'Enable FileStream [Win]'
-  condition: eq(variables['Agent.OS'], 'Windows_NT')
-  env:
-    SQL_USER: ${{parameters.user }}
-    SQL_PASSWD: ${{parameters.password }}
+- ${{ if ne(parameters.SQLRootPath, '') }}:
+  - powershell: |
+      #Enable FileStream
+      $instance = "${{parameters.instanceName }}"
+      $wmi = Get-WmiObject -Namespace "${{parameters.SQLRootPath }}" -Class FilestreamSettings | where {$_.InstanceName -eq $instance}
+      $wmi.EnableFilestream(3, $instance)
+      
+      $machineName = $env:COMPUTERNAME
+      
+      if ("${{parameters.instanceName }}" -ne "MSSQLSERVER"){
+        $machineName += "\${{parameters.instanceName }}"
+      }
+      
+      #Change the access level for FileStream for SQLServer
+      Set-ExecutionPolicy Unrestricted
+      Import-Module "sqlps"
+      Invoke-Sqlcmd -ServerInstance "$machineName" @"
+          EXEC sp_configure filestream_access_level, 2;
+          RECONFIGURE;
+      "@
+    displayName: 'Enable FileStream [Win]'
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    env:
+      SQL_USER: ${{parameters.user }}
+      SQL_PASSWD: ${{parameters.password }}
 
 - ${{ if ne(parameters.FileStreamDirectory, '') }}:
   - pwsh: |
