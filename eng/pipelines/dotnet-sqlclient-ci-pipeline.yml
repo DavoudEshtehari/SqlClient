@@ -131,6 +131,7 @@ stages:
           testSets: ${{parameters.testSets }} # [1, 2, 3] # list of test sets to run
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }} # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
           publishTestResults: ${{parameters.publishTestResults }} # publish test results to pipeline
+          azureEnabled: false # expected to run on Azure
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_CONN_STRING)
@@ -174,6 +175,7 @@ stages:
           testSets: ${{parameters.testSets }}
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
+          azureEnabled: false
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_CONN_STRING)
@@ -204,6 +206,7 @@ stages:
           testSets: ${{parameters.testSets }}
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
+          azureEnabled: false
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_INSTANCE_CONN_STRING)
@@ -218,11 +221,13 @@ stages:
           pool: $(defaultPoolName) 
           images: 
             Win22_Azure_Sql: ADO-MMS22-SQL19
+            win11_Azure_Sql: ADO-CI-Win11
           TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
+          azureEnabled: true
           configProperties:
             # config.json properties
             TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING)
@@ -247,6 +252,7 @@ stages:
           testSets: ${{parameters.testSets }}
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
+          azureEnabled: true
           configProperties:
             # config.json properties
             TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING_eastus)

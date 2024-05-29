@@ -48,6 +48,10 @@ parameters:
   - name: publishTestResults
     type: boolean
     default: true
+  
+  - name: azureEnabled
+    type: boolean
+    default: false
 
 jobs:
 - job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, 'unknown_image')) }}
@@ -129,38 +133,52 @@ jobs:
         ${{ if parameters.configProperties.ManagedIdentitySupported }}:
           ManagedIdentitySupported: ${{ eq(parameters.configProperties.ManagedIdentitySupported, 'true') }}
 
-    - template: ../steps/configure-sql-server-step.yml # configure SQL Server
-      parameters:
-        ${{ if parameters.configProperties.instanceName }}:
-          instanceName: ${{ parameters.configProperties.instanceName }}
-        ${{ if parameters.configProperties.user }}:
-          user: ${{ parameters.configProperties.user }}
-        ${{ if parameters.configProperties.saUser }}:
-          saUser: ${{ parameters.configProperties.saUser }}
-        ${{ if parameters.configProperties.password }}:
-          password: ${{ parameters.configProperties.password }}
-        ${{ if parameters.configProperties.SQLRootPath }}:
-          SQLRootPath: ${{ parameters.configProperties.SQLRootPath }}
-        ${{ if parameters.configProperties.x64AliasRegistryPath }}:
-          x64AliasRegistryPath: ${{ parameters.configProperties.x64AliasRegistryPath }}
-        ${{ if parameters.configProperties.x86AliasRegistryPath }}:
-          x86AliasRegistryPath: ${{ parameters.configProperties.x86AliasRegistryPath }}
-        ${{ if parameters.configProperties.SQLAliasName }}:
-          SQLAliasName: ${{ parameters.configProperties.SQLAliasName }}
-        ${{ if parameters.configProperties.SQLAliasPort }}:
-          SQLAliasPort: ${{ parameters.configProperties.SQLAliasPort }}
-        ${{ if parameters.configProperties.targetNetCoreVersion }}:
-          targetNetCoreVersion: ${{ parameters.configProperties.targetNetCoreVersion }}
-        ${{ if parameters.configProperties.databaseName }}:
-          databaseName: ${{ parameters.configProperties.databaseName }}
-        ${{ if parameters.configProperties.enableLocalDB }}:
-          enableLocalDB: ${{ parameters.configProperties.enableLocalDB }}
-        ${{ if parameters.configProperties.localDbAppName }}:
-          LocalDbAppName: ${{ parameters.configProperties.localDbAppName }}
-        ${{ if parameters.configProperties.localDbSharedInstanceName }}:
-          LocalDbSharedInstanceName: ${{ parameters.configProperties.localDbSharedInstanceName }}
-        ${{ if parameters.configProperties.FileStreamDirectory }}:
-          fileStreamDirectory: ${{ parameters.configProperties.FileStreamDirectory }}
+    - ${{ if eq(parameters.azureEnabled, true) }}:
+      - powershell: |
+          # Try to start the SQL Browser service, if it exists
+          $svc_name = "SQLBrowser"
+          if ((Get-Service -Name "$svc_name" -ErrorAction SilentlyContinue) -ne $null) {
+              Get-Service $svc_name | Select-Object -Property Name, StartType, Status
+              Set-Service -StartupType Automatic $svc_name
+              net start $svc_name
+              Get-Service $svc_name | Select-Object -Property Name, StartType, Status
+          }
+          
+        displayName: 'Start Sql Browser'
+        condition: eq(variables['Agent.OS'], 'Windows_NT')
+    - ${{ else }}:
+      - template: ../steps/configure-sql-server-step.yml # configure SQL Server
+        parameters:
+          ${{ if parameters.configProperties.instanceName }}:
+            instanceName: ${{ parameters.configProperties.instanceName }}
+          ${{ if parameters.configProperties.user }}:
+            user: ${{ parameters.configProperties.user }}
+          ${{ if parameters.configProperties.saUser }}:
+            saUser: ${{ parameters.configProperties.saUser }}
+          ${{ if parameters.configProperties.password }}:
+            password: ${{ parameters.configProperties.password }}
+          ${{ if parameters.configProperties.SQLRootPath }}:
+            SQLRootPath: ${{ parameters.configProperties.SQLRootPath }}
+          ${{ if parameters.configProperties.x64AliasRegistryPath }}:
+            x64AliasRegistryPath: ${{ parameters.configProperties.x64AliasRegistryPath }}
+          ${{ if parameters.configProperties.x86AliasRegistryPath }}:
+            x86AliasRegistryPath: ${{ parameters.configProperties.x86AliasRegistryPath }}
+          ${{ if parameters.configProperties.SQLAliasName }}:
+            SQLAliasName: ${{ parameters.configProperties.SQLAliasName }}
+          ${{ if parameters.configProperties.SQLAliasPort }}:
+            SQLAliasPort: ${{ parameters.configProperties.SQLAliasPort }}
+          ${{ if parameters.configProperties.targetNetCoreVersion }}:
+            targetNetCoreVersion: ${{ parameters.configProperties.targetNetCoreVersion }}
+          ${{ if parameters.configProperties.databaseName }}:
+            databaseName: ${{ parameters.configProperties.databaseName }}
+          ${{ if parameters.configProperties.enableLocalDB }}:
+            enableLocalDB: ${{ parameters.configProperties.enableLocalDB }}
+          ${{ if parameters.configProperties.localDbAppName }}:
+            LocalDbAppName: ${{ parameters.configProperties.localDbAppName }}
+          ${{ if parameters.configProperties.localDbSharedInstanceName }}:
+            LocalDbSharedInstanceName: ${{ parameters.configProperties.localDbSharedInstanceName }}
+          ${{ if parameters.configProperties.FileStreamDirectory }}:
+            fileStreamDirectory: ${{ parameters.configProperties.FileStreamDirectory }}
 
     - template: ../steps/build-all-tests-step.yml # build tests
       parameters:
