@@ -16,7 +16,7 @@ parameters:
     default: $(NugetPackageVersion)
 
 steps:
-- pwsh: |
+- script: |
     # Get a list of package sources available
     Get-PackageSource
 
