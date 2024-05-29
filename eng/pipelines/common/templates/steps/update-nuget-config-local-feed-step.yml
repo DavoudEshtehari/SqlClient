@@ -16,7 +16,7 @@ parameters:
     default: $(NugetPackageVersion)
 
 steps:
-- script: |
+- powershell: |
     # Get a list of package sources available
     Get-PackageSource
 
@@ -41,7 +41,7 @@ steps:
   displayName: 'Update NuGet config file to read from Nuget folder'
 
 - ${{ if parameters.debug }}:
-  - pwsh: |
+  - powershell: |
       # Display the content of the Nuget.config file
       Get-Content -Path "Nuget.config"
     displayName: 'Display NuGet config file content'
@@ -53,7 +53,7 @@ steps:
     msbuildArchitecture: x64
     msbuildArguments: '-t:restore'
 
-- pwsh: |
+- powershell: |
     $Doc = [xml](Get-Content ".\Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.csproj")
     $parent_xpath = '/Project/ItemGroup/ProjectReference'
     $node = $Doc.SelectSingleNode($parent_xpath)
