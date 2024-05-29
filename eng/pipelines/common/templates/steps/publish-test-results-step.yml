@@ -40,7 +40,7 @@ steps:
     buildConfiguration: '${{parameters.configuration }}'
   condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Windows_NT'))
 
-- pwsh: |
+- powershell: |
    cd TestResults
    Get-ChildItem -Filter “*.coverage” -Recurse | Rename-Item -NewName {"${{parameters.targetFramework }}" + $_.name} 
   displayName: 'Rename coverage files'

@@ -157,7 +157,7 @@ steps:
       SQL_PASSWD: ${{parameters.password }}
 
 - ${{ if ne(parameters.FileStreamDirectory, '') }}:
-  - pwsh: |
+  - powershell: |
       New-Item -Path ${{ parameters.fileStreamDirectory }} -ItemType Directory
     displayName: 'Create FileStreamFolder'
     retryCountOnTaskFailure: 1

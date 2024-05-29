@@ -45,7 +45,7 @@ steps:
     inputs:
       checkLatest: true
 
-- pwsh: |
+- powershell: |
     $Commit=git rev-parse HEAD
     Write-Host "##vso[task.setvariable variable=CommitHead;]$Commit"
   displayName: CommitHead

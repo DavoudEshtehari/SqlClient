@@ -176,7 +176,7 @@ jobs:
         testSet: ${{ parameters.testSet }}
   
   - ${{ if eq(parameters.enableX86Test, true) }}: # run x86 tests
-    - pwsh: |
+    - powershell: |
         dotnet --info
         
         Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
