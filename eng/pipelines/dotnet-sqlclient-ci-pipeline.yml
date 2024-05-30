@@ -132,7 +132,7 @@ stages:
           testSets: ${{parameters.testSets }} # [1, 2, 3] # list of test sets to run
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }} # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
           publishTestResults: ${{parameters.publishTestResults }} # publish test results to pipeline
-          cofigSqlFor: local # setup Sql Server (local | azure | enclave)
+          configSqlFor: local # setup Sql Server (local | azure | enclave)
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_CONN_STRING)
@@ -177,7 +177,7 @@ stages:
           testSets: ${{parameters.testSets }}
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
-          cofigSqlFor: local
+          configSqlFor: local
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_CONN_STRING)
@@ -208,7 +208,7 @@ stages:
           testSets: ${{parameters.testSets }}
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
-          cofigSqlFor: local
+          configSqlFor: local
           configProperties:
             # config.json properties
             TCPConnectionString: $(SQL_TCP_INSTANCE_CONN_STRING)
@@ -229,7 +229,7 @@ stages:
           testSets: ${{parameters.testSets }}
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
-          cofigSqlFor: azure
+          configSqlFor: azure
           configProperties:
             # config.json properties
             TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING)
@@ -254,7 +254,7 @@ stages:
           testSets: ${{parameters.testSets }}
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
-          cofigSqlFor: azure
+          configSqlFor: azure
           configProperties:
             # config.json properties
             TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING_eastus)
@@ -279,18 +279,23 @@ stages:
           testSets: [AE]
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
-          cofigSqlFor: enclave
+          configSqlFor: enclave
           configProperties:
             # config.json properties
-            TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING_eastus)
-            NPConnectionString: $(AZURE_DB_NP_CONN_STRING_eastus)
+            CPConnectionStringHGSVBS: $(SQL_TCP_CONN_STRING_HGSVBS)
+            TCPConnectionStringNoneVBS: $(SQL_TCP_CONN_STRING_NoneVBS)
+            TCPConnectionStringAASSGX: $(SQL_TCP_CONN_STRING_AASSGX)
+            EnclaveEnabled: true
             AADAuthorityURL: $(AADAuthorityURL)
-            AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR_eastus)
+            AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR)
             AADServicePrincipalId: $(AADServicePrincipalId)
             AADServicePrincipalSecret: $(AADServicePrincipalSecret)
             AzureKeyVaultUrl: $(AzureKeyVaultUrl)
             AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
-            SupportsIntegratedSecurity: false
-            UserManagedIdentityClientId: $(UserManagedIdentityClientId_eastus)
+            SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
+            UseManagedSNIOnWindows: $(UseManagedSNIOnWindows)
+            UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+            AliasName: $(SQLAliasName)            
             LocalDbAppName: $(LocalDbAppName)
             LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
+
