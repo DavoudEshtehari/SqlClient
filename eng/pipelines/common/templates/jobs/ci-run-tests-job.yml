@@ -74,6 +74,7 @@ jobs:
     - template: ../steps/update-config-file-step.yml # update config.json file
       parameters:
         debug: ${{ parameters.debug }}
+        UseManagedSNIOnWindows: ${{ parameters.usemanagedSNI }}
         ${{ if parameters.configProperties.TCPConnectionString }}:
           TCPConnectionString: ${{ parameters.configProperties.TCPConnectionString }}
         ${{ if parameters.configProperties.NPConnectionString }}:
@@ -100,8 +101,6 @@ jobs:
           AzureKeyVaultUrl: ${{ parameters.configProperties.AzureKeyVaultUrl }}
         ${{ if parameters.configProperties.AzureKeyVaultTenantId }}:
           AzureKeyVaultTenantId: ${{ parameters.configProperties.AzureKeyVaultTenantId }}
-        ${{ if parameters.configProperties.UseManagedSNIOnWindows }}:
-          UseManagedSNIOnWindows: ${{ parameters.usemanagedSNI }}
         ${{ if parameters.configProperties.UserManagedIdentityClientId }}:
           UserManagedIdentityClientId: ${{ parameters.configProperties.UserManagedIdentityClientId }}
         ${{ if parameters.configProperties.FileStreamDirectory }}:

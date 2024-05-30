@@ -287,7 +287,9 @@ stages:
           configSqlFor: enclave
           configProperties:
             # config.json properties
-            CPConnectionStringHGSVBS: $(SQL_TCP_CONN_STRING_HGSVBS)
+            TCPConnectionString: ''
+            NPConnectionString: ''
+            TCPConnectionStringHGSVBS: $(SQL_TCP_CONN_STRING_HGSVBS)
             TCPConnectionStringNoneVBS: $(SQL_TCP_CONN_STRING_NoneVBS)
             TCPConnectionStringAASSGX: $(SQL_TCP_CONN_STRING_AASSGX)
             EnclaveEnabled: true
@@ -298,7 +300,6 @@ stages:
             AzureKeyVaultUrl: $(AzureKeyVaultUrl)
             AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
             SupportsIntegratedSecurity: $(SupportsIntegratedSecurity)
-            UseManagedSNIOnWindows: $(UseManagedSNIOnWindows)
             UserManagedIdentityClientId: $(UserManagedIdentityClientId)
             AliasName: $(SQLAliasName)            
             LocalDbAppName: $(LocalDbAppName)
