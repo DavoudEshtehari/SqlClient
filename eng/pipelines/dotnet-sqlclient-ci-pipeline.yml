@@ -101,8 +101,10 @@ stages:
       #     artifactName: $(artifactName)
 
       # temporary steps
-      - script: SET
-        displayName: 'Print Environment Variables'
+      - powershell: |
+          Get-ChildItem env: | Sort-Object Name
+        displayName: 'List Environment Variables'
+        condition: eq(variables['debug'], true)
       # - task: DownloadPipelineArtifact@2
       #   displayName: 'Download NuGet Package'
       #   inputs:
@@ -223,7 +225,7 @@ stages:
             SQLRootPath: $(SQL22RootPath)
             instanceName: $(NamedInstance)
 
-    # Azure SQL Server Windows
+    # Azure SQL Server - Windows
         windows_azure_sql:
           pool: $(defaultPoolName) 
           images: 
@@ -330,5 +332,5 @@ stages:
             LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
             AliasName: $(SQLAliasName)
 
-    # Azure Sql Server Linux
-    # Azure Sql Server Mac
+    # Azure Sql Server - Linux
+    # Azure Sql Server - Mac
