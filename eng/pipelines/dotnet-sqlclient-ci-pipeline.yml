@@ -61,8 +61,8 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: object
   default: [1, 2, 3]
 
-- name: useManagedSNIOnWindows
-  displayName: 'Use Managed SNI on Windows ([false, true], [false] or [true] values are allowed)'
+- name: useManagedSNI
+  displayName: 'Use Managed/Native SNI  ([false, true], [false] or [true] values are allowed)'
   type: object
   default: [false, true]
 
@@ -135,7 +135,7 @@ stages:
           TargetFrameworks: ${{parameters.targetFrameworks }} #[net462, net6.0, net8.0] # list of target frameworks to run
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }} # [1, 2, 3] # list of test sets to run
-          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }} # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
+          useManagedSNI: ${{parameters.useManagedSNI }} # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
           publishTestResults: ${{parameters.publishTestResults }} # publish test results to pipeline
           configSqlFor: local # setup Sql Server (local | azure | enclave)
           configProperties:
@@ -180,7 +180,7 @@ stages:
           TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
-          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          useManagedSNI: ${{parameters.useManagedSNI }}
           publishTestResults: ${{parameters.publishTestResults }}
           configSqlFor: local
           configProperties:
@@ -211,7 +211,7 @@ stages:
           TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
-          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          useManagedSNI: ${{parameters.useManagedSNI }}
           publishTestResults: ${{parameters.publishTestResults }}
           configSqlFor: local
           configProperties:
@@ -232,7 +232,7 @@ stages:
           TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
-          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          useManagedSNI: ${{parameters.useManagedSNI }}
           publishTestResults: ${{parameters.publishTestResults }}
           configSqlFor: azure
           configProperties:
@@ -257,7 +257,7 @@ stages:
           TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
-          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          useManagedSNI: ${{parameters.useManagedSNI }}
           publishTestResults: ${{parameters.publishTestResults }}
           configSqlFor: azure
           configProperties:
@@ -282,7 +282,7 @@ stages:
           TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: [AE]
-          useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
+          useManagedSNI: ${{parameters.useManagedSNI }}
           publishTestResults: ${{parameters.publishTestResults }}
           configSqlFor: enclave
           configProperties:
@@ -306,7 +306,7 @@ stages:
             LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
 
     # self hosted SQL Server on Linux
-        linux_sql_19:
+        linux_sql_19_22:
           pool: $(defaultPoolName)
           images:
             Ubuntu20_Sql19: ADO-UB20-Sql19
@@ -314,6 +314,7 @@ stages:
           TargetFrameworks: ${{parameters.targetFrameworksLinux }}
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
+          useManagedSNI: [true]
           publishTestResults: ${{parameters.publishTestResults }}
           configSqlFor: local
           configProperties:

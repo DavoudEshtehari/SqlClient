@@ -50,7 +50,7 @@ stages:
                           ${{ if eq(x86TF, targetFramework) }}:
                             enableX86Test: true
                 - ${{ else }}: # .NET
-                  - ${{ each useManagedSNI in config.value.useManagedSNIOnWindows }}:
+                  - ${{ each useManagedSNI in config.value.useManagedSNI }}:
                     - template: ../jobs/ci-run-tests-job.yml
                       parameters:
                         debug: ${{ parameters.debug }}
