@@ -42,9 +42,14 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   default: false
 
 - name: targetFrameworks
-  displayName: 'Target Frameworks'
+  displayName: 'Target Frameworks on Windows'
   type: object
   default: [net462, net6.0, net8.0]
+
+- name: targetFrameworksLinux
+  displayName: 'Target Frameworks on Linux'
+  type: object
+  default: [net6.0, net8.0]
 
 - name: buildPlatforms
   displayName: 'Build Platforms'
@@ -299,3 +304,29 @@ stages:
             LocalDbAppName: $(LocalDbAppName)
             LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
 
+    # self hosted SQL Server on Linux
+        linux_sql_19:
+          pool: $(defaultPoolName)
+          images:
+            Ubuntu20_Sql19: ADO-UB20-Sql19
+            Ubuntu20_Sql22: ADO-UB2004-SQL2022
+          TargetFrameworks: ${{parameters.targetFrameworksLinux }}
+          buildPlatforms: ${{parameters.buildPlatforms }}
+          testSets: ${{parameters.testSets }}
+          publishTestResults: ${{parameters.publishTestResults }}
+          configSqlFor: local
+          configProperties:
+            # config.json properties
+            TCPConnectionString: $(SQL_TCP_CONN_STRING)
+            NPConnectionString: $(SQL_NP_CONN_STRING)
+            AADServicePrincipalSecret: $(AADServicePrincipalSecret)
+            AzureKeyVaultUrl: $(AzureKeyVaultUrl)
+            AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
+            SupportsIntegratedSecurity: false
+            UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+            LocalDbAppName: $(LocalDbAppName)
+            LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
+            AliasName: $(SQLAliasName)
+
+    # Azure Sql Server Linux
+    # Azure Sql Server Mac
