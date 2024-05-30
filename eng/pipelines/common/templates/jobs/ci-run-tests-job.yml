@@ -49,9 +49,9 @@ parameters:
     type: boolean
     default: true
   
-  - name: azureEnabled
-    type: boolean
-    default: false
+  - name: cofigSqlFor
+    type: string # local, azure, or enclave
+    default: local
 
 jobs:
 - job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, 'unknown_image')) }}
@@ -133,7 +133,7 @@ jobs:
         ${{ if parameters.configProperties.ManagedIdentitySupported }}:
           ManagedIdentitySupported: ${{ eq(parameters.configProperties.ManagedIdentitySupported, 'true') }}
 
-    - ${{ if eq(parameters.azureEnabled, true) }}:
+    - ${{ if eq(parameters.cofigSqlFor, 'azure') }}:
       - powershell: |
           # Try to start the SQL Browser service, if it exists
           $svc_name = "SQLBrowser"
@@ -146,7 +146,7 @@ jobs:
           
         displayName: 'Start Sql Browser'
         condition: eq(variables['Agent.OS'], 'Windows_NT')
-    - ${{ else }}:
+    - ${{ elseif eq(parameters.cofigSqlFor, 'local') }}:
       - template: ../steps/configure-sql-server-step.yml # configure SQL Server
         parameters:
           ${{ if parameters.configProperties.instanceName }}:
