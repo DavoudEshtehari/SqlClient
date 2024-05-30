@@ -101,10 +101,15 @@ stages:
       #     artifactName: $(artifactName)
 
       # temporary steps
-      - powershell: |
-          Get-ChildItem env: | Sort-Object Name
-        displayName: 'List Environment Variables'
-        condition: eq(variables['debug'], true)
+      - ${{if eq(parameters.debug, true)}}:
+        - powershell: |
+            Get-ChildItem env: | Sort-Object Name
+          displayName: 'List Environment Variables'
+
+        - powershell: |
+            Get-ChildItem -Path $(Build.SourcesDirectory)
+          displayName: 'List Files in Sources Directory'
+
       # - task: DownloadPipelineArtifact@2
       #   displayName: 'Download NuGet Package'
       #   inputs:
