@@ -6,6 +6,7 @@
 
 name: $(DayOfYear)$(Rev:rr)
 trigger: none
+  # batch: true
   # branches:
   #   include:
   #   - internal/main
@@ -217,7 +218,7 @@ stages:
             SQLRootPath: $(SQL22RootPath)
             instanceName: $(NamedInstance)
 
-    # Azure SQL Server
+    # Azure SQL Server Windows
         windows_azure_sql:
           pool: $(defaultPoolName) 
           images: 
@@ -275,7 +276,7 @@ stages:
             Win22_Enclave_Sql19: ADO-MMS22-SQL19
           TargetFrameworks: ${{parameters.targetFrameworks }}
           buildPlatforms: ${{parameters.buildPlatforms }}
-          testSets: ${{parameters.testSets }}
+          testSets: [AE]
           useManagedSNIOnWindows: ${{parameters.useManagedSNIOnWindows }}
           publishTestResults: ${{parameters.publishTestResults }}
           cofigSqlFor: enclave
