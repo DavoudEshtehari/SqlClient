@@ -29,21 +29,21 @@ steps:
     # Get a list of package sources available after the change
     Get-PackageSource
 
-    #Set the Nuget.config file in the project to use extracted package
+    #Set the NuGet.config file in the project to use extracted package
     $rootFolder = Get-location
-    [Xml] $nugetConfig = Get-Content -Path "Nuget.config"
+    [Xml] $nugetConfig = Get-Content -Path "NuGet.config"
     $Value = Resolve-Path ${{parameters.downloadedNugetPath }}
     $newAdd = $nugetConfig.CreateElement("add")
     $newAdd.SetAttribute("key","Package source")
     $newAdd.SetAttribute("value", "$Value\" )
     $nugetConfig.configuration.packageSources.AppendChild($newAdd)
-    $nugetConfig.Save("$rootFolder\Nuget.config")
+    $nugetConfig.Save("$rootFolder\NuGet.config")
   displayName: 'Update NuGet config file to read from Nuget folder'
 
 - ${{ if parameters.debug }}:
   - powershell: |
-      # Display the content of the Nuget.config file
-      Get-Content -Path "Nuget.config"
+      # Display the content of the NuGet.config file
+      Get-Content -Path "NuGet.config"
     displayName: 'Display NuGet config file content'
 
 - task: MSBuild@1
