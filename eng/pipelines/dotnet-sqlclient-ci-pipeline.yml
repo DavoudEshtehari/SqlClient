@@ -343,4 +343,30 @@ stages:
             AliasName: $(SQLAliasName)
 
     # Azure Sql Server - Linux
+        linux_azure_sql:
+          pool: $(defaultPoolName)
+          images:
+            Ubuntu20_Azure_Sql: ADO-UB20-Sql19
+          TargetFrameworks: ${{parameters.targetFrameworksLinux }}
+          buildPlatforms: ${{parameters.buildPlatforms }}
+          testSets: ${{parameters.testSets }}
+          useManagedSNI: [true]
+          publishTestResults: ${{parameters.publishTestResults }}
+          configSqlFor: azure
+          operatingSystem: Linux
+          configProperties:
+            # config.json properties
+            TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING)
+            NPConnectionString: $(AZURE_DB_NP_CONN_STRING)
+            AADAuthorityURL: $(AADAuthorityURL)
+            AADPasswordConnectionString: $(AAD_PASSWORD_CONN_STR)
+            AADServicePrincipalId: $(AADServicePrincipalId)
+            AADServicePrincipalSecret: $(AADServicePrincipalSecret)
+            AzureKeyVaultUrl: $(AzureKeyVaultUrl)
+            AzureKeyVaultTenantId: $(AzureKeyVaultTenantId)
+            SupportsIntegratedSecurity: false
+            UserManagedIdentityClientId: $(UserManagedIdentityClientId)
+            LocalDbAppName: $(LocalDbAppName)
+            LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
+
     # Azure Sql Server - Mac
