@@ -57,8 +57,9 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: 'Restore NuGets'
   inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
+    command: 'custom'
+    custom: 'msbuild'
+    arguments: 'build.proj -t:restore'
     feedsToUse: 'select'
   # condition: and(succeeded(), ne(variables['Agent.OS'], 'Windows_NT'))
 
