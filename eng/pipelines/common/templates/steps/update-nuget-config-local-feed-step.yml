@@ -46,14 +46,6 @@ steps:
       Get-Content -Path "NuGet.config"
     displayName: 'Display NuGet config file content'
 
-# - task: MSBuild@1
-#   displayName: 'Restore nugets [Win]'
-#   inputs:
-#     solution: build.proj
-#     msbuildArchitecture: x64
-#     msbuildArguments: '-t:restore'
-#   condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-
 - task: DotNetCoreCLI@2
   displayName: 'Restore NuGets'
   inputs:
@@ -61,7 +53,6 @@ steps:
     custom: 'msbuild'
     arguments: 'build.proj -t:restore'
     feedsToUse: 'select'
-  # condition: and(succeeded(), ne(variables['Agent.OS'], 'Windows_NT'))
 
 - powershell: |
     $Doc = [xml](Get-Content "./Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.csproj")

@@ -53,13 +53,15 @@ steps:
 #     condition: and(succeeded(), not(startsWith(variables['TF'], 'net4')), startsWith(variables['TargetNetStandardVersion'], 'netstandard'))
 
 - ${{else}}: # .NET
-  - task: MSBuild@1
+  - task: DotNetCoreCLI@2
     displayName: 'Build Tests NetCore'
     inputs:
-      solution: build.proj
-      platform: '${{parameters.platform }}'
-      configuration: '${{parameters.configuration }}'
+      command: custom
+      project: build.proj
+      custom: msbuild
+      verbosityRestore: Detailed
+      verbosityPack: Detailed
       ${{ if eq(parameters.OSGroup, '') }}:
-        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }}'
+        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:platfrom=${{parameters.platform }} -p:Configuration=${{parameters.configuration }}'
       ${{ else }}:
-        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:OSGroup=${{parameters.OSGroup }}'
+        msbuildArguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:OSGroup=${{parameters.OSGroup }} -p:platfrom=${{parameters.platform }} -p:Configuration=${{parameters.configuration }}'
