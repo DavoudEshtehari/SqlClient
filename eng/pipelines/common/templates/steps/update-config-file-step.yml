@@ -122,7 +122,7 @@ parameters:
 
   - name: ManagedIdentitySupported
     type: boolean
-    default: false
+    default: true
 
 steps:
 # All properties should be added here, and this template should be used for any manipulation of the config.json file.
@@ -130,68 +130,47 @@ steps:
     $jdata = Get-Content -Raw "config.default.json" | ConvertFrom-Json
     foreach ($p in $jdata)
     {
-        if ("${{parameters.TCPConnectionString }}" -ne ""){
-          $p.TCPConnectionString="${{parameters.TCPConnectionString }}"}
+        $p.TCPConnectionString="${{parameters.TCPConnectionString }}"
 
-        if ("${{parameters.NPConnectionString }}" -ne ""){
-          $p.NPConnectionString="${{parameters.NPConnectionString }}"}
+        $p.NPConnectionString="${{parameters.NPConnectionString }}"
 
-        if ("${{parameters.AADAuthorityURL }}" -ne ""){
-          $p.AADAuthorityURL="${{parameters.AADAuthorityURL }}"}
+        $p.AADAuthorityURL="${{parameters.AADAuthorityURL }}"
 
-        if ("${{parameters.AADPasswordConnectionString }}" -ne ""){
-          $p.AADPasswordConnectionString="${{parameters.AADPasswordConnectionString }}"}
+        $p.AADPasswordConnectionString="${{parameters.AADPasswordConnectionString }}"
 
-        if ("${{parameters.AADServicePrincipalId }}" -ne ""){
-          $p.AADServicePrincipalId="${{parameters.AADServicePrincipalId }}"}
+        $p.AADServicePrincipalId="${{parameters.AADServicePrincipalId }}"
 
-        if ("${{parameters.AADServicePrincipalSecret }}" -ne ""){
-          $p.AADServicePrincipalSecret="${{parameters.AADServicePrincipalSecret }}"}
+        $p.AADServicePrincipalSecret="${{parameters.AADServicePrincipalSecret }}"
 
-        if ("${{parameters.AzureKeyVaultUrl }}" -ne ""){
-          $p.AzureKeyVaultUrl="${{parameters.AzureKeyVaultUrl }}"}
+        $p.AzureKeyVaultUrl="${{parameters.AzureKeyVaultUrl }}"
 
-        if ("${{parameters.AzureKeyVaultTenantId }}" -ne ""){
-          $p.AzureKeyVaultTenantId="${{parameters.AzureKeyVaultTenantId }}"}
+        $p.AzureKeyVaultTenantId="${{parameters.AzureKeyVaultTenantId }}"
 
-        if ("${{parameters.UserManagedIdentityClientId }}" -ne ""){
-          $p.UserManagedIdentityClientId="${{parameters.UserManagedIdentityClientId }}"}
+        $p.UserManagedIdentityClientId="${{parameters.UserManagedIdentityClientId }}"
 
-        if ("${{parameters.FileStreamDirectory }}" -ne ""){
-          $p.FileStreamDirectory="${{parameters.FileStreamDirectory }}"}
+        $p.FileStreamDirectory="${{parameters.FileStreamDirectory }}"
 
-        if ("${{parameters.LocalDbSharedInstanceName }}" -ne ""){
-          $p.LocalDbSharedInstanceName="${{parameters.LocalDbSharedInstanceName }}"}
+        $p.LocalDbSharedInstanceName="${{parameters.LocalDbSharedInstanceName }}"
 
-        if ("${{parameters.AliasName }}" -ne ""){
-          $p.AliasName="${{parameters.AliasName }}"}
+        $p.AliasName="${{parameters.AliasName }}"
 
-        if ("${{parameters.EnclaveAzureDatabaseConnString }}" -ne ""){
-          $p.EnclaveAzureDatabaseConnString="${{parameters.EnclaveAzureDatabaseConnString }}"}
+        $p.EnclaveAzureDatabaseConnString="${{parameters.EnclaveAzureDatabaseConnString }}"
 
-        if ("${{parameters.DNSCachingServerTR }}" -ne ""){
-          $p.DNSCachingServerTR="${{parameters.DNSCachingServerTR }}"}
+        $p.DNSCachingServerTR="${{parameters.DNSCachingServerTR }}"
 
-        if ("${{parameters.DNSCachingServerCR }}" -ne ""){
-          $p.DNSCachingServerCR="${{parameters.DNSCachingServerCR }}"}
+        $p.DNSCachingServerCR="${{parameters.DNSCachingServerCR }}"
 
-        if ("${{parameters.DNSCachingConnString }}" -ne ""){
-          $p.DNSCachingConnString="${{parameters.DNSCachingConnString }}"}
+        $p.DNSCachingConnString="${{parameters.DNSCachingConnString }}"
 
-        if ("${{parameters.SupportsFileStream }}" -ne ""){
-          $p.SupportsFileStream="${{parameters.SupportsFileStream }}"}
+        $p.SupportsFileStream="${{parameters.SupportsFileStream }}"
 
-        if ("${{parameters.LocalDbAppName }}" -ne ""){
-          $p.LocalDbAppName="${{parameters.LocalDbAppName }}"}
+        $p.LocalDbAppName="${{parameters.LocalDbAppName }}"
 
-        if ("${{parameters.TCPConnectionStringAASSGX }}" -ne ""){
-          $p.TCPConnectionStringAASSGX="${{parameters.TCPConnectionStringAASSGX }}"}
+        $p.TCPConnectionStringAASSGX="${{parameters.TCPConnectionStringAASSGX }}"
 
-        if ("${{parameters.TCPConnectionStringNoneVBS }}" -ne ""){
-          $p.TCPConnectionStringNoneVBS="${{parameters.TCPConnectionStringNoneVBS }}"}
+        $p.TCPConnectionStringNoneVBS="${{parameters.TCPConnectionStringNoneVBS }}"
 
-        if ("${{parameters.TCPConnectionStringHGSVBS }}" -ne ""){
-          $p.TCPConnectionStringHGSVBS="${{parameters.TCPConnectionStringHGSVBS }}"}
+        $p.TCPConnectionStringHGSVBS="${{parameters.TCPConnectionStringHGSVBS }}"
 
         $p.UseManagedSNIOnWindows=[System.Convert]::ToBoolean("${{parameters.UseManagedSNIOnWindows }}")
         $p.SupportsIntegratedSecurity=[System.Convert]::ToBoolean("${{parameters.SupportsIntegratedSecurity }}")
