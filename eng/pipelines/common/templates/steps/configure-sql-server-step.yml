@@ -65,30 +65,35 @@ parameters:
   - name: databaseName
     type: string
     default: Northwind
+  
+  - name: operatingSystem
+    type: string
 
 steps:
-# windows only steps
-- template: configure-sql-server-win-step.yml
-  parameters:
-    instanceName: ${{parameters.instanceName}}
-    user: ${{parameters.user}}
-    saUser: ${{parameters.saUser}}
-    SQLRootPath: ${{parameters.SQLRootPath}}
-    fileStreamDirectory: ${{parameters.fileStreamDirectory}}
-    x64AliasRegistryPath: ${{parameters.x64AliasRegistryPath}}
-    x86AliasRegistryPath: ${{parameters.x86AliasRegistryPath}}
-    SQLAliasName: ${{parameters.SQLAliasName}}
-    SQLAliasPort: ${{parameters.SQLAliasPort}}
-    enableLocalDB: ${{parameters.enableLocalDB}}
-    localDbAppName: ${{parameters.localDbAppName}}
-    localDbSharedInstanceName: ${{parameters.localDbSharedInstanceName}}
-    password: ${{parameters.password}}
+- ${{ if eq(parameters.operatingSystem, 'Windows') }}:
+  # windows only steps
+  - template: configure-sql-server-win-step.yml
+    parameters:
+      instanceName: ${{parameters.instanceName}}
+      user: ${{parameters.user}}
+      saUser: ${{parameters.saUser}}
+      SQLRootPath: ${{parameters.SQLRootPath}}
+      fileStreamDirectory: ${{parameters.fileStreamDirectory}}
+      x64AliasRegistryPath: ${{parameters.x64AliasRegistryPath}}
+      x86AliasRegistryPath: ${{parameters.x86AliasRegistryPath}}
+      SQLAliasName: ${{parameters.SQLAliasName}}
+      SQLAliasPort: ${{parameters.SQLAliasPort}}
+      enableLocalDB: ${{parameters.enableLocalDB}}
+      localDbAppName: ${{parameters.localDbAppName}}
+      localDbSharedInstanceName: ${{parameters.localDbSharedInstanceName}}
+      password: ${{parameters.password}}
 
-# Linux only steps
-- template: configure-sql-server-linux-step.yml
-  parameters:
-    password: ${{parameters.password}}
-    targetNetCoreVersion: ${{parameters.targetNetCoreVersion}}
+- ${{ elseif eq(parameters.operatingSystem, 'Linux') }}:
+  # Linux only steps
+  - template: configure-sql-server-linux-step.yml
+    parameters:
+      password: ${{parameters.password}}
+      targetNetCoreVersion: ${{parameters.targetNetCoreVersion}}
 
 # Common steps
 - task: DotNetCoreCLI@2

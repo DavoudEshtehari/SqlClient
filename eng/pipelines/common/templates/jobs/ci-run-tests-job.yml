@@ -52,6 +52,10 @@ parameters:
   - name: configSqlFor
     type: string # local, azure, or enclave
     default: local
+  
+  - name: operatingSystem
+    type: string
+    default: ''
 
 jobs:
 - job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, 'unknown_image')) }}
@@ -132,7 +136,7 @@ jobs:
         ${{ if parameters.configProperties.ManagedIdentitySupported }}:
           ManagedIdentitySupported: ${{ eq(parameters.configProperties.ManagedIdentitySupported, 'true') }}
 
-    - ${{ if eq(parameters.configSqlFor, 'azure') }}:
+    - ${{ if and(eq(parameters.configSqlFor, 'azure'), eq(parameters.operatingSystem, 'Windows')) }}:
       - powershell: |
           # Try to start the SQL Browser service, if it exists
           $svc_name = "SQLBrowser"
@@ -148,6 +152,7 @@ jobs:
     - ${{ elseif eq(parameters.configSqlFor, 'local') }}:
       - template: ../steps/configure-sql-server-step.yml # configure SQL Server
         parameters:
+          operatingSystem: ${{ parameters.operatingSystem }}
           ${{ if parameters.configProperties.instanceName }}:
             instanceName: ${{ parameters.configProperties.instanceName }}
           ${{ if parameters.configProperties.user }}:
@@ -184,6 +189,8 @@ jobs:
         targetFramework: ${{ parameters.targetFramework }}
         referenceType: Package
         testSet: ${{ parameters.testSet }}
+        ${{ if ne(parameters.operatingSystem, 'Windows') }}:
+          OSGroup: Unix
 
     - template: ../steps/run-all-tests-step.yml # run tests
       parameters:
@@ -191,8 +198,9 @@ jobs:
         targetFramework: ${{ parameters.targetFramework }}
         referenceType: Package
         testSet: ${{ parameters.testSet }}
+        operatingSystem: ${{ parameters.operatingSystem }}
   
-  - ${{ if eq(parameters.enableX86Test, true) }}: # run x86 tests
+  - ${{ if and(eq(parameters.enableX86Test, true), eq(parameters.operatingSystem, 'Windows')) }}: # run x86 tests
     - powershell: |
         dotnet --info
         
@@ -219,6 +227,7 @@ jobs:
         testSet: ${{ parameters.testSet }}
         msbuildArchitecture: x86
         dotnetx86RootPath: $(dotnetx86RootPath)
+        operatingSystem: ${{ parameters.operatingSystem }}
 
   - ${{ if eq(parameters.publishTestResults, true) }}: # publish test results
     - template: ../steps/publish-test-results-step.yml
