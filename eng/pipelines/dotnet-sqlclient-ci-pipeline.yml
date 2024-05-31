@@ -300,8 +300,8 @@ stages:
           operatingSystem: Windows
           configProperties:
             # config.json properties
-            TCPConnectionString: ''
-            NPConnectionString: ''
+            TCPConnectionString: ' '
+            NPConnectionString: ' '
             TCPConnectionStringHGSVBS: $(SQL_TCP_CONN_STRING_HGSVBS)
             TCPConnectionStringNoneVBS: $(SQL_TCP_CONN_STRING_NoneVBS)
             TCPConnectionStringAASSGX: $(SQL_TCP_CONN_STRING_AASSGX)
