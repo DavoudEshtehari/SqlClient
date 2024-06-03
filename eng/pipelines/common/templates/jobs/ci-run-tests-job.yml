@@ -10,11 +10,9 @@ parameters:
 
   - name: poolName
     type: string
-    default: ADO-1ES-Pool
 
-  - name: imageOverride
+  - name: image
     type: string
-    default: ADO-MMS22-SQL19
 
   - name: jobDisplayName
     type: string
@@ -58,13 +56,15 @@ parameters:
     default: ''
 
 jobs:
-- job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.imageOverride, 'unknown_image')) }}
+- job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.image, 'unknown_image')) }}
 
   pool: 
-    #vmImage: ${{ parameters.imageOverride }} # <<<<< temporary for testing >>>>>
-    name: ${{parameters.poolName }}
-    demands:
-    - imageOverride -equals ${{ parameters.imageOverride }}
+    ${{ if eq(parameters.poolName, variables.hostedPoolName) }}:
+      vmImage: ${{ parameters.image }}
+    ${{ else }}:
+      name: ${{parameters.poolName }}
+      demands:
+      - imageOverride -equals ${{ parameters.image }}
 
   variables:
     - name: dotnetx86RootPath

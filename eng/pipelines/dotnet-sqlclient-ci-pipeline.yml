@@ -52,7 +52,7 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   default: [net6.0, net8.0]
 
 - name: buildPlatforms
-  displayName: 'Build Platforms'
+  displayName: 'Build Platforms on Windows'
   type: object
   default: [AnyCPU]
 
@@ -63,8 +63,8 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 
 - name: useManagedSNI
   displayName: |
-    Use Managed/Native SNI on Windows
-    [false, true], [false] or [true] are allowed
+    Use Managed/Native SNI on Windows,
+    values [false, true], [false] or [true] are allowed
   type: object
   default: [false, true]
 
@@ -325,7 +325,7 @@ stages:
             Ubuntu20_Sql19: ADO-UB20-Sql19
             Ubuntu20_Sql22: ADO-UB2004-SQL2022
           TargetFrameworks: ${{parameters.targetFrameworksLinux }}
-          buildPlatforms: ${{parameters.buildPlatforms }}
+          buildPlatforms: [AnyCPU]
           testSets: ${{parameters.testSets }}
           useManagedSNI: [true]
           publishTestResults: ${{parameters.publishTestResults }}
@@ -350,7 +350,7 @@ stages:
           images:
             Ubuntu20_Azure_Sql: ADO-UB20-Sql19
           TargetFrameworks: ${{parameters.targetFrameworksLinux }}
-          buildPlatforms: ${{parameters.buildPlatforms }}
+          buildPlatforms: [AnyCPU]
           testSets: ${{parameters.testSets }}
           useManagedSNI: [true]
           publishTestResults: ${{parameters.publishTestResults }}
@@ -376,7 +376,7 @@ stages:
           images:
             Ubuntu20_Enclave_Sql19: ADO-UB20-Sql19
           TargetFrameworks: ${{parameters.targetFrameworksLinux }}
-          buildPlatforms: ${{parameters.buildPlatforms }}
+          buildPlatforms: [AnyCPU]
           testSets: [AE]
           useManagedSNI: [true]
           publishTestResults: ${{parameters.publishTestResults }}
@@ -400,3 +400,22 @@ stages:
             LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)
 
     # Azure Sql Server - Mac
+        mac_azure_sql:
+          pool: $(hostedPoolName)
+          images:
+            MacOS12_Azure_Sql: macOS-12
+          TargetFrameworks: ${{parameters.targetFrameworksLinux }}
+          buildPlatforms: [AnyCPU]
+          testSets: ${{parameters.testSets }}
+          useManagedSNI: [true]
+          publishTestResults: ${{parameters.publishTestResults }}
+          configSqlFor: azure
+          operatingSystem: Mac
+          configProperties:
+            # config.json properties
+            TCPConnectionString: $(AZURE_DB_TCP_CONN_STRING)
+            NPConnectionString: $(AZURE_DB_NP_CONN_STRING)
+            SupportsIntegratedSecurity: false
+            ManagedIdentitySupported: false
+            LocalDbAppName: $(LocalDbAppName)
+            LocalDbSharedInstanceName: $(LocalDbSharedInstanceName)

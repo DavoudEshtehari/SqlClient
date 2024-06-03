@@ -23,3 +23,5 @@ variables:
     value: false
   - name: packagePath
     value: '$(Build.SourcesDirectory)/packages'
+  - name: hostedPoolName
+    value: 'Azure Pipelines'

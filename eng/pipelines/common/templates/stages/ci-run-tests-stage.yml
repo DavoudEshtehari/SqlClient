@@ -36,7 +36,7 @@ stages:
                     parameters:
                       debug: ${{ parameters.debug }}
                       poolName: ${{ config.value.pool }}
-                      imageOverride: ${{ image.value }}
+                      image: ${{ image.value }}
                       jobDisplayName: ${{ format('{0}_{1}_{2}', replace(targetFramework, '.', '_'), platform, testSet) }}
                       configProperties: ${{ config.value.configProperties }}
                       prebuildSteps: ${{ parameters.prebuildSteps }}
@@ -55,7 +55,7 @@ stages:
                       parameters:
                         debug: ${{ parameters.debug }}
                         poolName: ${{ config.value.pool }}
-                        imageOverride: ${{ image.value }}
+                        image: ${{ image.value }}
                         ${{if eq(usemanagedSNI, 'true') }}:
                           jobDisplayName: ${{ format('{0}_{1}_{2}_{3}', replace(targetFramework, '.', '_'), platform, 'ManagedSNI', testSet) }}
                         ${{ else }}:
