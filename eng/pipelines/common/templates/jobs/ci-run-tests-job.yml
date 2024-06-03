@@ -58,6 +58,10 @@ parameters:
 jobs:
 - job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.image, 'unknown_image')) }}
 
+  variables:
+    - name: dotnetx86RootPath
+      value: '$(dotnetx86Path)'
+
   pool: 
     ${{ if eq(parameters.poolName, variables.hostedPoolName) }}:
       vmImage: ${{ parameters.image }}
@@ -65,10 +69,6 @@ jobs:
       name: ${{parameters.poolName }}
       demands:
       - imageOverride -equals ${{ parameters.image }}
-
-  variables:
-    - name: dotnetx86RootPath
-      value: '$(dotnetx86Path)'
 
   steps:
   - ${{ if ne(parameters.prebuildSteps, '') }}:
