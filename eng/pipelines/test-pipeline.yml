@@ -111,17 +111,25 @@ stages:
 
   - job: job_Test
     pool: 
-      vmimage: 'macOS-12'
+      name: 'Azure pipelines'
+      vmimage: macOS-12
     
     steps:
     - script: echo "1. $(Agent.OS)"
       displayName: 'Print Agent.OS'
 
+    - script: SET
+      displayName: 'Print Environment Variables'
+    
   - job: job1
     pool: 
       vmImage: 'windows-latest'
 
     steps:
+    - checkout: self # 'self' is a special value that causes the repository where the initial pipeline was queued to be checked out
+      persistCredentials: true
+      clean: true
+
     - script: SET
       displayName: 'Print Environment Variables'
 
