@@ -64,7 +64,7 @@ steps:
 
 - ${{ else }}: # .NET on Unix
   - task: DotNetCoreCLI@2
-    displayName: 'Build Tests NetCore [Linux]'
+    displayName: 'Build Tests NetCore [Non-Win]'
     inputs:
       command: custom
       projects: build.proj
@@ -72,4 +72,4 @@ steps:
       arguments: '-t:BuildTestsNetCore -p:TF=${{parameters.targetFramework }} -p:TestSet=${{parameters.testSet }} -p:ReferenceType=${{parameters.referenceType }} -p:TestMicrosoftDataSqlClientVersion=${{parameters.nugetPackageVersion }} -p:OSGroup=${{parameters.OSGroup }} -p:platform=${{parameters.platform }} -p:Configuration=${{parameters.configuration }}'
       verbosityRestore: Detailed
       verbosityPack: Detailed
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Windows_NT'))
