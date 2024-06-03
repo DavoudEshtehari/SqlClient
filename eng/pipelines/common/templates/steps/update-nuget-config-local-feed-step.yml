@@ -44,7 +44,7 @@ steps:
   - powershell: |
       # Display the content of the NuGet.config file
       Get-Content -Path "NuGet.config"
-    displayName: 'Display NuGet config file content'
+    displayName: 'Read NuGet.config [debug]'
 
 - task: DotNetCoreCLI@2
   displayName: 'Restore NuGets'

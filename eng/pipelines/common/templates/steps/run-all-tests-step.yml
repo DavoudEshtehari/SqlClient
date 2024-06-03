@@ -49,7 +49,7 @@ parameters:
 steps:
 - ${{ if parameters.debug }}:
   - powershell: 'dotnet sdk check'
-    displayName: '.NET sdk check'
+    displayName: '.NET sdk check [debug]'
     condition: succeededOrFailed()
 
 - ${{if eq(parameters.operatingSystem, 'Windows')}}:
