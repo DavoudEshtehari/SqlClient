@@ -16,12 +16,10 @@ variables:
   - name: SQLTarget
     value: 'localhost'
   - name: NugetPackageVersion
-    value: '5.20.0-pull.114304' # $(Major).$(Minor)$(Patch)-pull.1$(buildnumber)
+    value: $(Major).$(Minor)$(Patch)-pull.1$(buildnumber)
   - name: skipComponentGovernanceDetection
     value: true
   - name: runCodesignValidationInjection
     value: false
   - name: packagePath
     value: '$(Build.SourcesDirectory)/packages'
-  - name: hostedPoolName
-    value: 'Azure Pipelines'
