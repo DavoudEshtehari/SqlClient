@@ -109,6 +109,15 @@ stages:
 - stage: test1
   jobs:
 
+  - job: job_Test
+    pool: 
+      name: 'Azure Pipelines'
+      imageOverride: 'macOS-12'
+    
+    steps:
+    - script: echo "1. $(Agent.OS)"
+      displayName: 'Print Agent.OS'
+
   - job: job1
     pool: 
       vmImage: 'windows-latest'
