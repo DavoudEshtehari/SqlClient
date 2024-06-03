@@ -111,8 +111,10 @@ stages:
 
   - job: job_Test
     pool: 
-      name: 'Azure pipelines'
-      vmimage: macOS-12
+      # name: 'Azure pipelines'
+      # vmimage: macOS-12
+      name: 'ADO-1ES-Pool'
+      vmimage: 'ADO-MMS22-SQL19'
     
     steps:
     - script: echo "1. $(Agent.OS)"
