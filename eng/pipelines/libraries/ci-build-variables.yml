@@ -16,7 +16,7 @@ variables:
   - name: SQLTarget
     value: 'localhost'
   - name: NugetPackageVersion
-    value: $(Major).$(Minor)$(Patch)-pull.1$(buildnumber)
+    value: 5.20.0-pull.115507 #$(Major).$(Minor)$(Patch)-pull.1$(buildnumber)
   - name: skipComponentGovernanceDetection
     value: true
   - name: runCodesignValidationInjection
