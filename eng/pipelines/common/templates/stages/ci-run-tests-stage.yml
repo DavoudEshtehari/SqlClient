@@ -47,7 +47,9 @@ stages:
                   prebuildSteps: ${{ parameters.prebuildSteps }}
                   targetFramework: ${{ targetFramework }}
                   testSet: ${{ testSet }}
-                  publishTestResults: ${{ config.value.publishTestResults }}
+                  ${{ each codeCoveTF in config.value.codeCovTargetFrameworks }}:
+                    ${{ if eq(codeCoveTF, targetFramework) }}:
+                      publishTestResults: true
                   configSqlFor: ${{ config.value.configSqlFor }}
                   operatingSystem: ${{ config.value.operatingSystem }}
                   ${{if ne(config.value.configProperties, '{}') }}:
@@ -71,7 +73,9 @@ stages:
                     prebuildSteps: ${{ parameters.prebuildSteps }}                  
                     targetFramework: ${{ targetFramework }}
                     testSet: ${{ testSet }}
-                    publishTestResults: ${{ config.value.publishTestResults }}
+                    ${{ each codeCoveTF in config.value.codeCovTargetFrameworks }}:
+                      ${{ if eq(codeCoveTF, targetFramework) }}:
+                        publishTestResults: true
                     configSqlFor: ${{ config.value.configSqlFor }}
                     operatingSystem: ${{ config.value.operatingSystem }}
                     ${{if and(eq(usemanagedSNI, false), ne(config.value.configProperties, '{}')) }}:
@@ -80,7 +84,7 @@ stages:
                           enableX86Test: true
 
 - ${{ if ne(parameters.postTestJobs, '') }}:
-  - stage: PostTest
+  - stage: Post_Test
     dependsOn: 
       - ${{ each config in parameters.testConfigurations }}:
         - ${{ each image in config.value.images }}:

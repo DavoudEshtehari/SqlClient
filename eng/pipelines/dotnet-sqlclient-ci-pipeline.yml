@@ -68,10 +68,15 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: object
   default: [false, true]
 
-- name: publishTestResults
+- name: uploadTestResult
   displayName: 'Publish Test Results'
   type: boolean
   default: true
+
+- name: codeCovTargetFrameworks
+  displayName: 'Code Coverage Target Frameworks'
+  type: object
+  default: [net462, net6.0]
 
 variables:
   - template: libraries/ci-build-variables.yml
@@ -84,6 +89,9 @@ variables:
 
   - name: defaultHostedPoolName
     value: 'Azure Pipelines'
+  
+  - name: ci_var_uploadTestResult # to override the default value of uploadTestResult parameter
+    value: ${{ parameters.uploadTestResult }}
 
 stages:
   # - stage: build
@@ -171,7 +179,7 @@ stages:
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }} # [1, 2, 3] # list of test sets to run
           useManagedSNI: ${{parameters.useManagedSNI }} # can be used for .NET Core only tests on Windows: [false, true], [false] or [true] values are allowed
-          publishTestResults: ${{parameters.publishTestResults }} # publish test results to pipeline
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }} # targeted frameworks that is going to participate in test result report generation
           configSqlFor: local # setup Sql Server (local | azure | enclave)
           operatingSystem: Windows # operating system to run tests on (Windows | Linux | Mac)
           configProperties:
@@ -217,7 +225,7 @@ stages:
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
           useManagedSNI: ${{parameters.useManagedSNI }}
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: local
           operatingSystem: Windows
           configProperties:
@@ -249,7 +257,7 @@ stages:
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
           useManagedSNI: ${{parameters.useManagedSNI }}
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: local
           operatingSystem: Windows
           configProperties:
@@ -271,7 +279,7 @@ stages:
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
           useManagedSNI: ${{parameters.useManagedSNI }}
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: azure
           operatingSystem: Windows
           configProperties:
@@ -297,7 +305,7 @@ stages:
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: ${{parameters.testSets }}
           useManagedSNI: ${{parameters.useManagedSNI }}
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: azure
           operatingSystem: Windows
           configProperties:
@@ -323,7 +331,7 @@ stages:
           buildPlatforms: ${{parameters.buildPlatforms }}
           testSets: [AE]
           useManagedSNI: ${{parameters.useManagedSNI }}
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: enclave
           operatingSystem: Windows
           configProperties:
@@ -354,7 +362,7 @@ stages:
           buildPlatforms: [AnyCPU]
           testSets: ${{parameters.testSets }}
           useManagedSNI: [true]
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: local
           operatingSystem: Linux
           configProperties:
@@ -379,7 +387,7 @@ stages:
           buildPlatforms: [AnyCPU]
           testSets: ${{parameters.testSets }}
           useManagedSNI: [true]
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: azure
           operatingSystem: Linux
           configProperties:
@@ -405,7 +413,7 @@ stages:
           buildPlatforms: [AnyCPU]
           testSets: [AE]
           useManagedSNI: [true]
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: enclave
           operatingSystem: Linux
           configProperties:
@@ -435,7 +443,7 @@ stages:
           buildPlatforms: [AnyCPU]
           testSets: ${{parameters.testSets }}
           useManagedSNI: [true]
-          publishTestResults: ${{parameters.publishTestResults }}
+          codeCovTargetFrameworks: ${{parameters.codeCovTargetFrameworks }}
           configSqlFor: azure
           operatingSystem: Mac
           configProperties:

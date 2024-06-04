@@ -49,7 +49,7 @@ parameters:
   
   - name: publishTestResults
     type: boolean
-    default: true
+    default: false
   
   - name: configSqlFor
     type: string # local, azure, or enclave
