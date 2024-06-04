@@ -69,7 +69,7 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   default: [false, true]
 
 - name: uploadTestResult
-  displayName: 'Publish Test Results'
+  displayName: 'Upload Test Results to Code Coverage'
   type: boolean
   default: true
 
