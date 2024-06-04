@@ -81,5 +81,4 @@ stages:
 
 - ${{ if ne(parameters.postTestJobs, '') }}:
   - stage: PostTest
-    dependsOn: ${{ parameters.testConfigurations.value.images.keys }}
     jobs: ${{ parameters.postTestJobs }}
