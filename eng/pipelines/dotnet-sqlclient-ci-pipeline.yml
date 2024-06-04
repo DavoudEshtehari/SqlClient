@@ -146,27 +146,12 @@ stages:
           debug: ${{ parameters.debug }}
 
       postTestJobs:
-      - job: CodeCoverage
-        displayName: 'Merge Code Coverage'
-        pool: 
-          name: $(defaultHostedPoolName)
-          vmImage: 'windows-2022'
-        steps:
-        - checkout: none
-        
-        - task: NuGetAuthenticate@1
-          displayName: 'NuGet Authenticate'
+      - template: common/templates/jobs/ci-code-coverage-job.yml
+        parameters:
+          debug: ${{ parameters.debug }}
+          Upload: ${{ variables.ci_var_uploadTestResult }}
+          targetFrameworks: ${{ parameters.codeCovTargetFrameworks }}
 
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK 7.0.x'
-          inputs:
-            version: 7.0.x
-
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download Coverage Reports NetFx'
-          inputs:
-            itemPattern: '**\net4*'
-            targetPath: '$(Build.SourcesDirectory)\coverageNetFx'
 # test stages configurations
   # self hosted SQL Server on Windows
       testConfigurations:

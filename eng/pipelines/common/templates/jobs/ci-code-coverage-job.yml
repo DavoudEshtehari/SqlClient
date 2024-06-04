@@ -1,0 +1,102 @@
+#################################################################################
+# Licensed to the .NET Foundation under one or more agreements.                 #
+# The .NET Foundation licenses this file to you under the MIT license.          #
+# See the LICENSE file in the project root for more information.                #
+#################################################################################
+parameters:
+  - name: debug
+    type: boolean
+    default: false
+
+  - name: Upload
+    type: boolean
+
+  - name: poolName
+    type: string
+    default: $(defaultHostedPoolName)
+
+  - name: image
+    type: string
+    default: 'windows-2022'
+  
+  - name: targetFrameworks
+    type: object
+
+jobs:
+- job: CodeCoverage
+  displayName: 'Merge Code Coverage'
+
+  pool: 
+    name: '${{ parameters.poolName }}'
+    vmImage: ${{ parameters.image }}
+
+  steps:
+  - checkout: none
+
+  - ${{if eq(parameters.debug, true)}}:
+    - powershell: |
+        Get-ChildItem env: | Sort-Object Name
+      displayName: 'List Environment Variables [debug]'
+  
+  - task: NuGetAuthenticate@1
+    displayName: 'NuGet Authenticate'
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK 7.0.x'
+    inputs:
+      version: 7.0.x
+
+  - ${{ each targetFramework in parameters.targetFrameworks }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Coverage Reports ${{ targetFramework }}'
+      inputs:
+        itemPattern: '**\${{ targetFramework }}*'
+        ${{ if contains(targetFramework, 'net4') }}:
+          targetPath: '$(Build.SourcesDirectory)\coverageNetFx'
+        ${{ else }}:
+          targetPath: '$(Build.SourcesDirectory)\coverageNetCore'
+
+  - powershell: |
+      dotnet tool install --global dotnet-coverage
+      
+      $files = Get-ChildItem $(Build.SourcesDirectory)\coverageNetFx\ -Recurse -File -Filter *.coverage
+      echo $files
+      mkdir coverageNetFxXml
+      $counter=0
+      foreach ($file in $files) {
+          & dotnet-coverage merge $file.FullName --output coverageNetFxXml\$((++$counter)).coveragexml --output-format xml
+      }
+      
+      $files = Get-ChildItem $(Build.SourcesDirectory)\coverageNetCore\ -Recurse -File -Filter *.coverage
+      echo $files
+      mkdir coverageNetCoreXml
+      $counter=0
+      foreach ($file in $files) {
+        & dotnet-coverage merge $file.FullName --output coverageNetCoreXml\$((++$counter)).coveragexml --output-format xml
+      }
+      
+      dir coverageNetFxXml\
+      
+      dir coverageNetCoreXml\
+      
+      Write-Host "Clean up disk ... [removing coverageNetFx & coverageNetCore]"
+      
+      Remove-Item $(Build.SourcesDirectory)\coverageNetFx -Recurse -Force
+      Remove-Item $(Build.SourcesDirectory)\coverageNetCore -Recurse -Force
+      
+    displayName: 'Convert coverage files to xml'
+
+  - script: |
+      dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools --version 5.2.4
+      
+      tools\reportgenerator "-reports:coverageNetFxXml\*.coveragexml" "-targetdir:coveragereportNetFx" "-reporttypes:Cobertura;" "-assemblyfilters:+microsoft.data.sqlclient.dll" "-sourcedirs:$(Build.SourcesDirectory)\src\Microsoft.Data.SqlClient\netfx\src;$(Build.SourcesDirectory)\src\Microsoft.Data.SqlClient\src" "-classfilters:+Microsoft.Data.*"
+      
+      tools\reportgenerator "-reports:coverageNetCoreXml\*.coveragexml" "-targetdir:coveragereportAddOns" "-reporttypes:Cobertura;" "-assemblyfilters:+microsoft.data.sqlclient.alwaysencrypted.azurekeyvaultprovider.dll" "-sourcedirs:$(Build.SourcesDirectory)\src\Microsoft.Data.SqlClient\add-ons\AzureKeyVaultProvider" "-classfilters:+Microsoft.Data.*"
+      
+      tools\reportgenerator "-reports:coverageNetCoreXml\*.coveragexml" "-targetdir:coveragereportNetCore" "-reporttypes:Cobertura;" "-assemblyfilters:+microsoft.data.sqlclient.dll" "-sourcedirs:$(Build.SourcesDirectory)\src\Microsoft.Data.SqlClient\netcore\src;$(Build.SourcesDirectory)\src\Microsoft.Data.SqlClient\src" "-classfilters:+Microsoft.Data.*"
+    displayName: 'Run ReportGenerator'
+
+  - task: PublishCodeCoverageResults@2
+    displayName: 'Publish code coverage from coveragereportNetCore'
+    inputs:
+      summaryFileLocation: '*\Cobertura.xml'
