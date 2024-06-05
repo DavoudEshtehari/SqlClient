@@ -1,0 +1,54 @@
+#################################################################################
+# Licensed to the .NET Foundation under one or more agreements.                 #
+# The .NET Foundation licenses this file to you under the MIT license.          #
+# See the LICENSE file in the project root for more information.                #
+#################################################################################
+
+name: $(DayOfYear)$(Rev:rr)
+parameters: # parameters are shown up in ADO UI in a build queue time
+- name: 'debug'
+  displayName: 'Enable debug output'
+  type: boolean
+  default: true
+
+- name: codeCovTargetFrameworks
+  displayName: 'Code Coverage Target Frameworks'
+  type: object
+  default: [net462, net6.0]
+
+- name: sourcePipelineId
+  displayName: 'Source Pipeline definition Id'
+  type: number
+  default: 1825
+
+variables:
+  - template: libraries/ci-build-variables.yml
+
+  - name: artifactName
+    value: Artifacts
+
+  - name: defaultPoolName
+    value: 'Azure Pipelines'
+
+stages:
+- stage: build
+  displayName: 'Build NuGet Packages'
+  jobs:
+  - template: common/templates/jobs/ci-code-coverage-job.yml
+    parameters:
+      debug: ${{ parameters.debug }}
+      Upload: false
+      downloadArtifactsSteps:
+        - ${{ each targetFramework in parameters.codeCovTargetFrameworks }}:
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Coverage Reports ${{ targetFramework }}'
+            inputs:
+              buildType: specific
+              project: 'ADO.Net'
+              definition: ${{ parameters.sourcePipelineId }} 
+              itemPattern: '**\${{ targetFramework }}*'
+              ${{ if contains(targetFramework, 'net4') }}:
+                targetPath: '$(Build.SourcesDirectory)\coverageNetFx'
+              ${{ else }}:
+                targetPath: '$(Build.SourcesDirectory)\coverageNetCore'
+
