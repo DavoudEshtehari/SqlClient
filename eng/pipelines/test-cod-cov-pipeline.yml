@@ -21,19 +21,26 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: number
   default: 1825
 
-- name: buildId
-  displayName: 'Build Id'
-  type: number
-  default: 0
-
 - name: buildVersionToDownload
   displayName: 'Build version to download'
   type: string
   default: 'latest'
 
+- name: buildId
+  displayName: 'Build Id'
+  type: number
+  default: 0
+
 variables:
   - name: defaultHostedPoolName
     value: 'Azure Pipelines'
+
+resources:
+  repositories:
+    - repository: sqlclient
+      type: github
+      name: dotnet/SqlClient
+      ref: refs/heads/main
 
 stages:
 - stage: build
@@ -48,7 +55,7 @@ stages:
       downloadArtifactsSteps:
         - ${{ each targetFramework in parameters.codeCovTargetFrameworks }}:
           - task: DownloadPipelineArtifact@2
-            displayName: 'Download Coverage Reports ${{ targetFramework }}'
+            displayName: 'Download Coverage Reports [${{ targetFramework }}]'
             inputs:
               buildType: specific
               project: 'ADO.Net'

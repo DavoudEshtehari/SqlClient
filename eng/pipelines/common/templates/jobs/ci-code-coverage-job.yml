@@ -37,6 +37,10 @@ jobs:
         Get-ChildItem env: | Sort-Object Name
       displayName: 'List Environment Variables [debug]'
   
+  # test 
+  - checkout: none
+  - checkout: sqlclient
+  
   - task: NuGetAuthenticate@1
     displayName: 'NuGet Authenticate'
 
