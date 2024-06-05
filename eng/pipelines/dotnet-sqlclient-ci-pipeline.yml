@@ -150,7 +150,16 @@ stages:
         parameters:
           debug: ${{ parameters.debug }}
           Upload: ${{ variables.ci_var_uploadTestResult }}
-          targetFrameworks: ${{ parameters.codeCovTargetFrameworks }}
+          downloadArtifactsSteps:
+            - ${{ each targetFramework in parameters.codeCovTargetFrameworks }}:
+              - task: DownloadPipelineArtifact@2
+                displayName: 'Download Coverage Reports ${{ targetFramework }}'
+                inputs:
+                  itemPattern: '**\${{ targetFramework }}*'
+                  ${{ if contains(targetFramework, 'net4') }}:
+                    targetPath: '$(Build.SourcesDirectory)\coverageNetFx'
+                  ${{ else }}:
+                    targetPath: '$(Build.SourcesDirectory)\coverageNetCore'
 
 # test stages configurations
   # self hosted SQL Server on Windows

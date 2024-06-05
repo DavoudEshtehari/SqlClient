@@ -19,8 +19,9 @@ parameters:
     type: string
     default: 'windows-2022'
   
-  - name: targetFrameworks
-    type: object
+  - name: downloadArtifactsSteps
+    type: stepList
+    default: []
 
 jobs:
 - job: CodeCoverage
@@ -44,15 +45,7 @@ jobs:
     inputs:
       version: 7.0.x
 
-  - ${{ each targetFramework in parameters.targetFrameworks }}:
-    - task: DownloadPipelineArtifact@2
-      displayName: 'Download Coverage Reports ${{ targetFramework }}'
-      inputs:
-        itemPattern: '**\${{ targetFramework }}*'
-        ${{ if contains(targetFramework, 'net4') }}:
-          targetPath: '$(Build.SourcesDirectory)\coverageNetFx'
-        ${{ else }}:
-          targetPath: '$(Build.SourcesDirectory)\coverageNetCore'
+  - ${{ parameters.downloadArtifactsSteps }}
 
   - powershell: |
       dotnet tool install --global dotnet-coverage --version 5.2.4
