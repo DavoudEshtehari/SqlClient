@@ -16,18 +16,23 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: object
   default: [net462, net6.0]
 
-- name: sourcePipelineId
+- name: definitionId
   displayName: 'Source Pipeline definition Id'
   type: number
   default: 1825
 
+- name: buildId
+  displayName: 'Build Id'
+  type: number
+  default: 0
+
+- name: buildVersionToDownload
+  displayName: 'Build version to download'
+  type: string
+  default: 'latest'
+
 variables:
-  - template: libraries/ci-build-variables.yml
-
-  - name: artifactName
-    value: Artifacts
-
-  - name: defaultPoolName
+  - name: defaultHostedPoolName
     value: 'Azure Pipelines'
 
 stages:
@@ -36,6 +41,8 @@ stages:
   jobs:
   - template: common/templates/jobs/ci-code-coverage-job.yml
     parameters:
+      poolName: $(defaultHostedPoolName)
+      image: 'windows-2022'
       debug: ${{ parameters.debug }}
       Upload: false
       downloadArtifactsSteps:
@@ -45,10 +52,14 @@ stages:
             inputs:
               buildType: specific
               project: 'ADO.Net'
-              definition: ${{ parameters.sourcePipelineId }} 
+              definition: ${{ parameters.definitionId }}
+              ${{ if ne(parameters.buildId, 0) }}:
+                pipelineId: ${{ parameters.buildId }}
+              buildVersionToDownload: ${{ parameters.buildVersionToDownload }}
+              allowPartiallySucceededBuilds: true
+              allowFailedBuilds: true
               itemPattern: '**\${{ targetFramework }}*'
               ${{ if contains(targetFramework, 'net4') }}:
                 targetPath: '$(Build.SourcesDirectory)\coverageNetFx'
               ${{ else }}:
                 targetPath: '$(Build.SourcesDirectory)\coverageNetCore'
-
