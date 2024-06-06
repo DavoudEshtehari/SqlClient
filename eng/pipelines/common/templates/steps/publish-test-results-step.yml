@@ -4,6 +4,10 @@
 # See the LICENSE file in the project root for more information.                #
 #################################################################################
 parameters:
+  - name: debug
+    type: boolean
+    default: false
+
   - name: targetFramework
     type: string
 
@@ -14,36 +18,38 @@ parameters:
   - name: configuration
     type: string
     default: '$(Configuration)'
+  
+  - name: operatingSystem
+    type: string
 
 steps:
 - task: PublishTestResults@2
-  displayName: 'Publish Test Results [Win]'
+  displayName: 'Publish Test Results'
   inputs:
     testResultsFormat: VSTest
-    testResultsFiles: 'TestResults/*.trx'
     mergeTestResults: true
-    testRunTitle: 'Windows Tests'
     buildPlatform: '${{parameters.platform }}'
     buildConfiguration: '${{parameters.configuration }}'
-  condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Windows_NT'))
-
-- task: PublishTestResults@2
-  displayName: 'Publish Test Results [Non-Win]'
-  inputs:
-    testResultsFormat: VSTest
-    testResultsFiles: |
-     TestResults/*.trx
-     TestResults/**/*.coverage
-    mergeTestResults: true
-    testRunTitle: 'Linux Tests'
-    buildPlatform: '${{parameters.platform }}'
-    buildConfiguration: '${{parameters.configuration }}'
-  condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Windows_NT'))
+    ${{ if eq(parameters.operatingSystem, 'Windows') }}:
+      testResultsFiles: 'TestResults/*.trx'
+      testRunTitle: 'Windows Tests'
+    ${{ else }}:
+      testResultsFiles: |
+        TestResults/*.trx
+        TestResults/**/*.coverage
+      testRunTitle: 'Linux Tests'
 
 - powershell: |
    cd TestResults
-   Get-ChildItem -Filter “*.coverage” -Recurse | Rename-Item -NewName {"${{parameters.targetFramework }}" + $_.name} 
+   $TF="${{parameters.targetFramework }}"
+   Get-ChildItem -Filter “*.coverage” -Recurse | Rename-Item -NewName {"$TF" + $_.name} 
   displayName: 'Rename coverage files'
+
+- ${{ if eq(parameters.debug, true)}}:
+  - powershell: |
+      cd TestResults
+      Get-ChildItem -Filter “*.coverage” -Recurse
+    displayName: 'List test result coverage files'
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish Pipeline Artifact'

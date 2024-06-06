@@ -236,4 +236,6 @@ jobs:
   - ${{ if eq(parameters.publishTestResults, true) }}: # publish test results
     - template: ../steps/publish-test-results-step.yml
       parameters:
-        targetFramework: ${{ parameters.targetFramework }}  
+        debug: ${{ parameters.debug }}
+        targetFramework: ${{ parameters.targetFramework }}
+        operatingSystem: ${{ parameters.operatingSystem }}
