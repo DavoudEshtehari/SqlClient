@@ -49,7 +49,7 @@ steps:
   - powershell: |
       cd TestResults
       Get-ChildItem -Filter “*.coverage” -Recurse
-    displayName: 'List test result coverage files'
+    displayName: 'List test result coverage files [debug]'
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish Pipeline Artifact'
