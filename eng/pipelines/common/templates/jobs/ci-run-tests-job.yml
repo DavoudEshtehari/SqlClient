@@ -58,6 +58,13 @@ parameters:
   - name: operatingSystem
     type: string
     default: ''
+  
+  - name: buildType
+    displayName: 'Build Type'
+    default: Project
+    values:
+      - Project
+      - Package
 
 jobs:
 - job: ${{ format('{0}', coalesce(parameters.jobDisplayName, parameters.image, 'unknown_image')) }}
@@ -191,7 +198,7 @@ jobs:
     - template: ../steps/build-all-tests-step.yml # build tests
       parameters:
         targetFramework: ${{ parameters.targetFramework }}
-        referenceType: Package
+        referenceType: ${{ parameters.buildType }}
         testSet: ${{ parameters.testSet }}
         ${{ if ne(parameters.operatingSystem, 'Windows') }}:
           OSGroup: Unix
@@ -200,7 +207,7 @@ jobs:
       parameters:
         debug: ${{ parameters.debug }}
         targetFramework: ${{ parameters.targetFramework }}
-        referenceType: Package
+        referenceType: ${{ parameters.buildType }}
         testSet: ${{ parameters.testSet }}
         operatingSystem: ${{ parameters.operatingSystem }}
   
@@ -227,7 +234,7 @@ jobs:
       parameters:
         debug: ${{ parameters.debug }}
         targetFramework: ${{ parameters.targetFramework }}
-        referenceType: Package
+        referenceType: ${{ parameters.buildType }}
         testSet: ${{ parameters.testSet }}
         msbuildArchitecture: x86
         dotnetx86RootPath: $(dotnetx86RootPath)

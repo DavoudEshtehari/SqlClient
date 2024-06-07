@@ -15,6 +15,13 @@ parameters:
     type: string
     default: ''
 
+  - name: buildType
+    displayName: 'Build Type'
+    default: Project
+    values:
+      - Project
+      - Package
+
   - name: prebuildSteps
     type: stepList
     default: []
@@ -39,6 +46,7 @@ stages:
               - template: ../jobs/ci-run-tests-job.yml
                 parameters:
                   debug: ${{ parameters.debug }}
+                  buildType: ${{ parameters.buildType }}
                   poolName: ${{ config.value.pool }}
                   hostedPool: ${{ eq(config.value.hostedPool, true) }}
                   image: ${{ image.value }}
@@ -61,6 +69,7 @@ stages:
                 - template: ../jobs/ci-run-tests-job.yml
                   parameters:
                     debug: ${{ parameters.debug }}
+                    buildType: ${{ parameters.buildType }}
                     poolName: ${{ config.value.pool }}
                     hostedPool: ${{ eq(config.value.hostedPool, true) }}
                     image: ${{ image.value }}

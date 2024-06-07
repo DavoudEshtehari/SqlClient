@@ -25,7 +25,7 @@ steps:
       Get-ChildItem env: | Sort-Object Name
     displayName: 'List Environment Variables [debug]'
 
-- ${{if eq(parameters.buildType, 'package')}}:
+- ${{if eq(parameters.buildType, 'Package')}}:
   - task: DownloadPipelineArtifact@2
     displayName: 'Download NuGet Package'
     inputs:
@@ -41,5 +41,3 @@ steps:
 
 - ${{ else }}: # project
   - template: common/templates/steps/ci-project-build-step.yml
-    parameters:
-      buildNumber: ''

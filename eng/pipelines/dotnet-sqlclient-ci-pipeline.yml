@@ -80,10 +80,10 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 
 - name: buildType
   displayName: 'Build Type'
-  default: project
+  default: Project
   values:
-    - project
-    - package
+    - Project
+    - Package
 
 variables:
   - template: libraries/ci-build-variables.yml
@@ -111,7 +111,8 @@ stages:
   - template: common/templates/stages/ci-run-tests-stage.yml
     parameters:
       debug: ${{ parameters.debug }}
-      ${{ if eq(parameters.buildType, 'package') }}:
+      buildType: ${{ parameters.buildType }}
+      ${{ if eq(parameters.buildType, 'Package') }}:
         dependsOn: 'build_nugets'
 
       prebuildSteps: # steps to run prior to building and running tests
@@ -130,7 +131,7 @@ stages:
             Get-ChildItem -Path $(Build.SourcesDirectory)
           displayName: 'List Files in Sources Directory'
 
-      - ${{if eq(parameters.buildType, 'package')}}:
+      - ${{if eq(parameters.buildType, 'Package')}}:
         - task: DownloadPipelineArtifact@2
           displayName: 'Download NuGet Package'
           inputs:
@@ -147,8 +148,6 @@ stages:
             debug: ${{ parameters.debug }}
       - ${{ else }}: # project
         - template: common/templates/steps/ci-project-build-step.yml
-          parameters:
-            buildNumber: ''
 
       postTestJobs: # jobs to run after the tests are done
       - template: common/templates/jobs/ci-code-coverage-job.yml
