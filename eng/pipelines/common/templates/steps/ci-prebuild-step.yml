@@ -11,6 +11,13 @@ parameters:
   - name: artifactName
     type: string
     default: Artifacts
+  
+  - name: buildType
+    displayName: 'Build Type'
+    default: project
+    values:
+      - project
+      - package
 
 steps:
 - ${{if eq(parameters.debug, true)}}:
@@ -18,15 +25,21 @@ steps:
       Get-ChildItem env: | Sort-Object Name
     displayName: 'List Environment Variables [debug]'
 
-- task: DownloadPipelineArtifact@2
-  displayName: 'Download NuGet Package'
-  inputs:
-    buildType: current
-    artifact: ${{parameters.artifactName }}
-    patterns: '**/*.nupkg'
-    targetPath: $(Pipeline.Workspace)/${{parameters.artifactName }}
+- ${{if eq(parameters.buildType, 'package')}}:
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download NuGet Package'
+    inputs:
+      buildType: current
+      artifact: ${{parameters.artifactName }}
+      patterns: '**/*.nupkg'
+      targetPath: $(Pipeline.Workspace)/${{parameters.artifactName }}
 
-- template: update-nuget-config-local-feed-step.yml
-  parameters:
-    downloadedNugetPath: $(Pipeline.Workspace)\${{parameters.artifactName }}
-    debug: ${{ parameters.debug }}
+  - template: update-nuget-config-local-feed-step.yml
+    parameters:
+      downloadedNugetPath: $(Pipeline.Workspace)\${{parameters.artifactName }}
+      debug: ${{ parameters.debug }}
+
+- ${{ else }}: # project
+  - template: common/templates/steps/ci-project-build-type-step.yml
+    parameters:
+      buildNumber: ''

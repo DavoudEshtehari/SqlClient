@@ -15,6 +15,14 @@ parameters:
   - name: artifactName
     type: string
     default: Artifacts
+  
+  - name: platform
+    type: string
+    default: $(Platform)
+  
+  - name: configuration
+    type: string
+    default: $(Configuration)
 
   - name: prebuildSteps
     type: stepList
@@ -36,40 +44,11 @@ jobs:
   - ${{ if ne(parameters.prebuildSteps, '') }}:
     - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
-  - task: MSBuild@1
-    displayName: 'Restore nugets'
-    inputs:
-      solution: build.proj
-      msbuildArchitecture: x64
-      msbuildArguments: '-t:restore'
-
-  - task: MSBuild@1
-    displayName: 'Build Driver'
-    inputs:
-      solution: build.proj
-      msbuildArchitecture: x64
-      platform: '$(Platform)'
-      configuration: '$(Configuration)'
-      msbuildArguments: '-t:BuildAllConfigurations -p:GenerateNuGet=false -p:BuildNumber=$(BuildNumber)'
-      clean: true
-
-  - task: MSBuild@1
-    displayName: 'Build AKV Provider NetFx'
-    inputs:
-      solution: build.proj
-      msbuildArchitecture: x64
-      platform: '$(Platform)'
-      configuration: '$(Configuration)'
-      msbuildArguments: '-t:BuildAKVNetFx -p:BuildNumber=$(BuildNumber)'
-
-  - task: MSBuild@1
-    displayName: 'Build AKV Provider NetCore All OS'
-    inputs:
-      solution: build.proj
-      msbuildArchitecture: x64
-      platform: '$(Platform)'
-      configuration: '$(Configuration)'
-      msbuildArguments: '-t:BuildAKVNetCoreAllOS -p:BuildNumber=$(BuildNumber)'
+  - template: ../steps/ci-project-build-type-step.yml
+    parameters:
+      platform: ${{ parameters.platform }}
+      configuration: ${{ parameters.configuration }}
+      operatingSystem: Windows
 
   - template: ../steps/generate-nuget-package-step.yml@self
     parameters:

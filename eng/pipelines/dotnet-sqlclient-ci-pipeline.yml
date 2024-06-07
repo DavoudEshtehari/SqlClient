@@ -78,6 +78,13 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: object
   default: [net462, net6.0]
 
+- name: buildType
+  displayName: 'Build Type'
+  default: project
+  values:
+    - project
+    - package
+
 variables:
   - template: libraries/ci-build-variables.yml
 
@@ -106,8 +113,7 @@ stages:
       # dependsOn: 'build'
       debug: ${{ parameters.debug }}
 
-      # steps to run prior to building and running tests
-      prebuildSteps:
+      prebuildSteps: # steps to run prior to building and running tests
       # - template: common/templates/steps/ci-prebuild-step.yml
       #   parameters:
       #     debug: ${{ parameters.debug }}
@@ -123,29 +129,27 @@ stages:
             Get-ChildItem -Path $(Build.SourcesDirectory)
           displayName: 'List Files in Sources Directory'
 
-      # - task: DownloadPipelineArtifact@2
-      #   displayName: 'Download NuGet Package'
-      #   inputs:
-      #     buildType: current
-      #     artifact: $(artifactName)
-      #     patterns: '**/*.nupkg'
-      #     targetPath: $(Pipeline.Workspace)/$(artifactName)
-      - task: DownloadPipelineArtifact@2
-        displayName: 'Download NuGet Package'
-        inputs:
-          buildType: specific
-          project: 'ADO.Net'
-          definition: 1831 # test-Davoud, #1825: self 
-          artifact: $(artifactName)
-          patterns: '**/*.nupkg'
-          targetPath: $(Pipeline.Workspace)/$(artifactName)
-      
-      - template: common/templates/steps/update-nuget-config-local-feed-step.yml
-        parameters:
-          downloadedNugetPath: $(Pipeline.Workspace)\$(artifactName)
-          debug: ${{ parameters.debug }}
+      - ${{if eq(parameters.buildType, 'package')}}:
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download NuGet Package'
+          inputs:
+            buildType: specific
+            project: 'ADO.Net'
+            definition: 1831 # test-Davoud, #1825: self 
+            artifact: $(artifactName)
+            patterns: '**/*.nupkg'
+            targetPath: $(Pipeline.Workspace)/$(artifactName)
+        
+        - template: common/templates/steps/update-nuget-config-local-feed-step.yml
+          parameters:
+            downloadedNugetPath: $(Pipeline.Workspace)\$(artifactName)
+            debug: ${{ parameters.debug }}
+      - ${{ else }}: # project
+        - template: common/templates/steps/ci-project-build-type-step.yml
+          parameters:
+            buildNumber: ''
 
-      postTestJobs:
+      postTestJobs: # jobs to run after the tests are done
       - template: common/templates/jobs/ci-code-coverage-job.yml
         parameters:
           debug: ${{ parameters.debug }}
