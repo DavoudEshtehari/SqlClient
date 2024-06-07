@@ -40,6 +40,6 @@ steps:
       debug: ${{ parameters.debug }}
 
 - ${{ else }}: # project
-  - template: common/templates/steps/ci-project-build-type-step.yml
+  - template: common/templates/steps/ci-project-build-step.yml
     parameters:
       buildNumber: ''

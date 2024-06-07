@@ -44,11 +44,12 @@ jobs:
   - ${{ if ne(parameters.prebuildSteps, '') }}:
     - ${{ parameters.prebuildSteps }} # extra steps to run before the build like downloading sni and the required configuration
 
-  - template: ../steps/ci-project-build-type-step.yml
+  - template: ../steps/ci-project-build-step.yml
     parameters:
       platform: ${{ parameters.platform }}
       configuration: ${{ parameters.configuration }}
       operatingSystem: Windows
+      build: all
 
   - template: ../steps/generate-nuget-package-step.yml@self
     parameters:
