@@ -110,8 +110,9 @@ stages:
 
   - template: common/templates/stages/ci-run-tests-stage.yml
     parameters:
-      # dependsOn: 'build'
       debug: ${{ parameters.debug }}
+      ${{ if eq(parameters.buildType, 'package') }}:
+        dependsOn: 'build_nugets'
 
       prebuildSteps: # steps to run prior to building and running tests
       # - template: common/templates/steps/ci-prebuild-step.yml
