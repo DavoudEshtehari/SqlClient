@@ -101,12 +101,12 @@ variables:
     value: ${{ parameters.uploadTestResult }}
 
 stages:
-  # - stage: build
-  #   displayName: 'Build NuGet Packages'
-  #   jobs:
-  #   - template: common/templates/jobs/ci-build-nugets-job.yml
-  #     parameters:
-  #       artifactName: $(artifactName)
+  - stage: build_nugets
+    displayName: 'Build NuGet Packages'
+    jobs:
+    - template: common/templates/jobs/ci-build-nugets-job.yml
+      parameters:
+        artifactName: $(artifactName)
 
   - template: common/templates/stages/ci-run-tests-stage.yml
     parameters:
