@@ -92,7 +92,7 @@ stages:
                         ${{ if eq(x86TF, targetFramework) }}:
                           enableX86Test: true
 
-- ${{ if ne(parameters.postTestJobs, '') }}:
+- ${{ if ne(length(parameters.postTestJobs), 0) }}:
   - stage: Post_Test
     dependsOn: 
       - ${{ each config in parameters.testConfigurations }}:

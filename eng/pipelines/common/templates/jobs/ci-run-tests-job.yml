@@ -240,7 +240,7 @@ jobs:
         dotnetx86RootPath: $(dotnetx86RootPath)
         operatingSystem: ${{ parameters.operatingSystem }}
 
-  - ${{ if eq(parameters.publishTestResults, true) }}: # publish test results
+  - ${{ if and(eq(parameters.publishTestResults, true), eq(parameters.buildType, 'Project')) }}: # publish test results if build type is project
     - template: ../steps/publish-test-results-step.yml
       parameters:
         debug: ${{ parameters.debug }}
