@@ -113,41 +113,14 @@ stages:
       debug: ${{ parameters.debug }}
       buildType: ${{ parameters.buildType }}
       ${{ if eq(parameters.buildType, 'Package') }}:
-        dependsOn: 'build_nugets'
+        dependsOn: build_nugets
 
-      prebuildSteps: # steps to run prior to building and running tests
-      # - template: common/templates/steps/ci-prebuild-step.yml
-      #   parameters:
-      #     debug: ${{ parameters.debug }}
-      #     artifactName: $(artifactName)
-
-      # temporary steps
-      - ${{if eq(parameters.debug, true)}}:
-        - powershell: |
-            Get-ChildItem env: | Sort-Object Name
-          displayName: 'List Environment Variables'
-
-        - powershell: |
-            Get-ChildItem -Path $(Build.SourcesDirectory)
-          displayName: 'List Files in Sources Directory'
-
-      - ${{if eq(parameters.buildType, 'Package')}}:
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download NuGet Package'
-          inputs:
-            buildType: specific
-            project: 'ADO.Net'
-            definition: 1831 # test-Davoud, #1825: self 
-            artifact: $(artifactName)
-            patterns: '**/*.nupkg'
-            targetPath: $(Pipeline.Workspace)/$(artifactName)
-        
-        - template: common/templates/steps/update-nuget-config-local-feed-step.yml
-          parameters:
-            downloadedNugetPath: $(Pipeline.Workspace)\$(artifactName)
-            debug: ${{ parameters.debug }}
-      - ${{ else }}: # project
-        - template: common/templates/steps/ci-project-build-step.yml
+      prebuildSteps: # steps to run prior to building and running tests on each job
+      - template: common/templates/steps/ci-prebuild-step.yml
+        parameters:
+          debug: ${{ parameters.debug }}
+          artifactName: $(artifactName)
+          buildType: ${{ parameters.buildType }}
 
       ${{ if eq(parameters.buildType, 'Project') }}: # only run the code coverage job if the build type is project
         postTestJobs: # jobs to run after the tests are done

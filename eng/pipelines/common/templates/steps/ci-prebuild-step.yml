@@ -14,10 +14,10 @@ parameters:
   
   - name: buildType
     displayName: 'Build Type'
-    default: project
+    default: Project
     values:
-      - project
-      - package
+      - Project
+      - Package
 
 steps:
 - ${{if eq(parameters.debug, true)}}:
@@ -40,4 +40,4 @@ steps:
       debug: ${{ parameters.debug }}
 
 - ${{ else }}: # project
-  - template: common/templates/steps/ci-project-build-step.yml
+  - template: ci-project-build-step.yml
