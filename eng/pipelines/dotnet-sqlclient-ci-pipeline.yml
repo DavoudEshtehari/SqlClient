@@ -68,11 +68,6 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: object
   default: [false, true]
 
-- name: uploadTestResult
-  displayName: 'Upload Test Results to Code Coverage'
-  type: boolean
-  default: true
-
 - name: codeCovTargetFrameworks
   displayName: 'Code Coverage Target Frameworks'
   type: object
@@ -97,8 +92,9 @@ variables:
   - name: defaultHostedPoolName
     value: 'Azure Pipelines'
   
-  - name: ci_var_uploadTestResult # to override the default value of uploadTestResult parameter
-    value: ${{ parameters.uploadTestResult }}
+  # Upload Test Results to Code Coverage flag
+  # Should be set on the pipeline level
+  # - name: ci_var_uploadTestResult
 
 stages:
   - stage: build_nugets
@@ -127,7 +123,7 @@ stages:
         - template: common/templates/jobs/ci-code-coverage-job.yml
           parameters:
             debug: ${{ parameters.debug }}
-            Upload: ${{ variables.ci_var_uploadTestResult }}
+            Upload: ${{ eq(variables.ci_var_uploadTestResult, 'true') }}
             downloadArtifactsSteps:
               - ${{ each targetFramework in parameters.codeCovTargetFrameworks }}:
                 - task: DownloadPipelineArtifact@2
