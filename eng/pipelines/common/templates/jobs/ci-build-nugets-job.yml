@@ -6,7 +6,7 @@
 parameters:
   - name: poolName
     type: string
-    default: ADO-1ES-Pool
+    default: $(ci_var_defaultPoolName)
 
   - name: imageOverride
     type: string

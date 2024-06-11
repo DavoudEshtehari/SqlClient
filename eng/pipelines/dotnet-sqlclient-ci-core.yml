@@ -39,6 +39,7 @@ parameters: # parameters are shown up in ADO UI in a build queue time
 - name: uploadTestResult
   displayName: 'Upload Test Results to Code Coverage'
   type: boolean
+  default: false
 
 - name: codeCovTargetFrameworks
   displayName: 'Code Coverage Target Frameworks'
@@ -52,14 +53,15 @@ parameters: # parameters are shown up in ADO UI in a build queue time
     - Project
     - Package
 
+- name: defaultPoolName
+  type: string
+  default: $(ci_var_defaultPoolName)
+
 variables:
   - template: libraries/ci-build-variables.yml
 
   - name: artifactName
     value: Artifacts
-
-  - name: defaultPoolName
-    value: ADO-1ES-Pool
 
   - name: defaultHostedPoolName
     value: 'Azure Pipelines'
@@ -107,7 +109,7 @@ stages:
   # self hosted SQL Server on Windows
       testConfigurations:
         windows_sql_19: # configuration name
-          pool: $(defaultPoolName) # pool name
+          pool: ${{parameters.defaultPoolName }} # pool name
           hostedPool: false # whether the pool is hosted or not
           images: # list of images to run tests on
             Win22_Sql19: ADO-MMS22-SQL19 # stage display name: image name from the pool
@@ -154,7 +156,7 @@ stages:
             # skipSqlConfiguration: # skips the SQL configuration step
 
         windows_sql_22: 
-          pool: $(defaultPoolName)
+          pool: ${{parameters.defaultPoolName }}
           images:
             Win22_Sql22: ADO-MMS22-SQL22 
           TargetFrameworks: ${{parameters.targetFrameworks }}
@@ -186,7 +188,7 @@ stages:
             enableLocalDB: true
 
         windows_sql_22_named_instance:
-          pool: $(defaultPoolName)
+          pool: ${{parameters.defaultPoolName }}
           images:
             Win22_Sql22_named_instance: ADO-MMS22-SQL22-WITH-NAMED-INSTANCE
           TargetFrameworks: ${{parameters.targetFrameworks }}
@@ -207,7 +209,7 @@ stages:
 
     # Azure SQL Server - Windows
         windows_azure_sql:
-          pool: $(defaultPoolName) 
+          pool: ${{parameters.defaultPoolName }} 
           images: 
             Win22_Azure_Sql: ADO-MMS22-SQL19
             win11_Azure_Sql: ADO-CI-Win11
@@ -290,7 +292,7 @@ stages:
 
     # self hosted SQL Server on Linux
         linux_sql_19_22:
-          pool: $(defaultPoolName)
+          pool: ${{parameters.defaultPoolName }}
           images:
             Ubuntu20_Sql19: ADO-UB20-Sql19
             Ubuntu20_Sql22: ADO-UB2004-SQL2022
@@ -316,7 +318,7 @@ stages:
 
     # Azure Sql Server - Linux
         linux_azure_sql:
-          pool: $(defaultPoolName)
+          pool: ${{parameters.defaultPoolName }}
           images:
             Ubuntu20_Azure_Sql: ADO-UB20-Sql19
           TargetFrameworks: ${{parameters.targetFrameworksLinux }}
