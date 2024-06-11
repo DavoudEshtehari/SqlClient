@@ -91,5 +91,3 @@ extends:
     useManagedSNI: ${{ parameters.useManagedSNI }}
     codeCovTargetFrameworks: ${{ parameters.codeCovTargetFrameworks }}
     buildType: ${{ parameters.buildType }}
-    # ci_var_uploadTestResult: Upload Test Results to Code Coverage flag should be set on the pipeline level
-    uploadTestResult: ${{ eq(variables.ci_var_uploadTestResult, 'true') }}

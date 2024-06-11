@@ -8,8 +8,9 @@ parameters:
     type: boolean
     default: false
 
-  - name: Upload
-    type: boolean
+  - name: upload
+    type: string
+    default: $(ci_var_uploadTestResult)
 
   - name: poolName
     type: string
@@ -106,13 +107,13 @@ jobs:
     inputs:
       summaryFileLocation: '*\Cobertura.xml'
 
-  - ${{ if parameters.Upload }}:
-    - powershell: |
-        #download Codecov CLI
-        $ProgressPreference = 'SilentlyContinue' 
-        Invoke-WebRequest -Uri https://cli.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
-        
-        ./codecov --verbose upload-process --fail-on-error -t $(CODECOV_TOKEN) -f "coveragereportNetFx\Cobertura.xml" -F netfx
-        ./codecov --verbose upload-process --fail-on-error -t $(CODECOV_TOKEN)  -f "coveragereportNetCore\Cobertura.xml" -F netcore
-        ./codecov --verbose upload-process --fail-on-error -t $(CODECOV_TOKEN)  -f "coveragereportAddOns\Cobertura.xml" -F addons
-      displayName: 'Upload to CodeCov'
+  - powershell: |
+      #download Codecov CLI
+      $ProgressPreference = 'SilentlyContinue' 
+      Invoke-WebRequest -Uri https://cli.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
+      
+      ./codecov --verbose upload-process --fail-on-error -t $(CODECOV_TOKEN) -f "coveragereportNetFx\Cobertura.xml" -F netfx
+      ./codecov --verbose upload-process --fail-on-error -t $(CODECOV_TOKEN)  -f "coveragereportNetCore\Cobertura.xml" -F netcore
+      ./codecov --verbose upload-process --fail-on-error -t $(CODECOV_TOKEN)  -f "coveragereportAddOns\Cobertura.xml" -F addons
+    displayName: 'Upload to CodeCov'
+    condition: and(succeeded(), ${{ eq(parameters.upload, 'true') }})

@@ -36,11 +36,6 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   type: object
   default: [false, true]
 
-- name: uploadTestResult
-  displayName: 'Upload Test Results to Code Coverage'
-  type: boolean
-  default: false
-
 - name: codeCovTargetFrameworks
   displayName: 'Code Coverage Target Frameworks'
   type: object
@@ -93,7 +88,6 @@ stages:
         - template: common/templates/jobs/ci-code-coverage-job.yml
           parameters:
             debug: ${{ parameters.debug }}
-            Upload: ${{parameters.uploadTestResult }}
             downloadArtifactsSteps:
               - ${{ each targetFramework in parameters.codeCovTargetFrameworks }}:
                 - task: DownloadPipelineArtifact@2
