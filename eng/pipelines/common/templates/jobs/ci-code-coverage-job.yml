@@ -41,33 +41,6 @@ jobs:
         Get-ChildItem env: | Sort-Object Name
       displayName: 'List Environment Variables [debug]'
 
-  - powershell: |
-      Write-Host ${{ parameters.upload }}
-      Write-Host $[variables.ci_var_uploadTestResult]
-      Write-Host $(ci_var_uploadTestResult)
-    displayName: 'Check upload 1'
-
-  - powershell: |
-      Write-Host ${{ parameters.upload }}
-      # Write-Host ${{ variables.ci_var_uploadTestResult }}
-      Write-Host $(ci_var_uploadTestResult)
-    displayName: 'Check upload 2'
-    condition: and(succeeded(), eq(variables['ci_var_uploadTestResult'], 'true'))
-
-  - powershell: |
-      Write-Host ${{ parameters.upload }}
-      # Write-Host ${{ variables.ci_var_uploadTestResult }}
-      Write-Host $(ci_var_uploadTestResult)
-    displayName: 'Check upload 3'
-    condition: and(succeeded(), eq(variables['uploadTestResult'], 'true'))
-
-  - powershell: |
-      Write-Host ${{ parameters.upload }}
-      # Write-Host ${{ variables.ci_var_uploadTestResult }}
-      Write-Host $(ci_var_uploadTestResult)
-    displayName: 'Check upload 4'
-    condition: and(succeeded(), ${{ eq(parameters.upload, 'true') }})
-
   - task: NuGetAuthenticate@1
     displayName: 'NuGet Authenticate'
 
@@ -146,4 +119,4 @@ jobs:
       ./codecov --verbose upload-process --fail-on-error -t $(CODECOV_TOKEN)  -f "coveragereportNetCore\Cobertura.xml" -F netcore
       ./codecov --verbose upload-process --fail-on-error -t $(CODECOV_TOKEN)  -f "coveragereportAddOns\Cobertura.xml" -F addons
     displayName: 'Upload to CodeCov'
-    # condition: and(succeeded(), ${{ eq(variables[ci_var_uploadTestResult], 'true') }})
+    condition: and(succeeded(), eq(variables['uploadTestResult'], 'true'))
